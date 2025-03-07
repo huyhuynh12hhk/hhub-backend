@@ -8,7 +8,7 @@ on:
       - ".github/workflows/identity-service.yml"
 
 jobs:
-  quality-:
+  quality-assurance:
     runs-on: ubuntu-latest
 
     steps:
