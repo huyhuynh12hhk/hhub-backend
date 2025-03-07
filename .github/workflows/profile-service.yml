@@ -1,0 +1,42 @@
+name: Profile Service Assurance
+
+on:
+  workflow_call:
+  push:
+    paths:
+      - "profile-service/**"
+      - ".github/workflows/profile-service.yml"
+
+jobs:
+  quality-assurance:
+    runs-on: ubuntu-latest
+    container: python:3.10.4-buster
+    services:
+      db:
+        image: postgres:14.2-alpine
+        env:
+          POSTGRES_DB: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: "pgtest"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Poetry
+        uses: abatilo/actions-poetry@v2.0.0
+        with:
+          poetry-version: 2.0.1
+
+      - name: Install dependencies
+        working-directory: profile-service  
+        run: |-
+          make install
+
+      - name: Test
+        working-directory: profile-service
+        run: |-    
+          make test
+        env:
+          SECRET_KEY: testkey_PVFkxm5fVfHyNBpCFxJVQ7JX2PgtYL
+          DATABASE_URL: postgres://postgres:pgtest@db:5432/postgres
+          ENVIRONMENT: production

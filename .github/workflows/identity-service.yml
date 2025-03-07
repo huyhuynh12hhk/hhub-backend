@@ -1,0 +1,28 @@
+name: Identity Service Assurance
+
+on:
+  workflow_call:
+  push:
+    paths:
+      - "identity-service/**"
+      - ".github/workflows/identity-service.yml"
+
+jobs:
+  quality-:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Test
+        working-directory: identity-service
+        run: |-
+          mvn clean test
+        env:
+          SECRET_KEY: testkey_PVFkxm5fVfHyNBpCFxJVQ7JX2PgtYL
+          ENVIRONMENT: production

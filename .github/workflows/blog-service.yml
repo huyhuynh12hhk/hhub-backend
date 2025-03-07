@@ -1,0 +1,35 @@
+name: Blog Service Assurance
+
+on:
+  workflow_call:
+  push:
+    paths:
+      - "blog-service/**"
+      - ".github/workflows/blog-service.yml"
+
+jobs:
+  quality-assurance:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install dependencies
+        working-directory: blog-service
+        run: |-
+          dotnet restore
+          dotnet build
+
+      - name: Test
+        working-directory: blog-service
+        run: |-
+          dotnet test
+        env:
+          SECRET_KEY: testkey_PVFkxm5fVfHyNBpCFxJVQ7JX2PgtYL
+          ASPNETCORE_URLS: http://+:5050
+          ASPNETCORE_ENVIRONMENT: production
