@@ -1,0 +1,52 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: main
+  cancel-in-progress: true
+
+jobs:
+  identity-assurance:
+    name: Identity Service Assurance
+    uses: ./.github/workflows/identity-service.yml
+
+  profile-assurance:
+    name: Profile Service Assurance
+    uses: ./.github/workflows/profile-service.yml
+
+  blog-assurance:
+    name: Blog Service Assurance
+    uses: ./.github/workflows/blog-service.yml
+
+  deploy:
+    name: Deploy
+    needs:
+      - identity-assurance
+      - profile-assurance
+      - blog-assurance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/github
+          chmod 600 ~/.ssh/github
+          cat >>~/.ssh/config <<END
+          Host target
+            HostName $SSH_HOST
+            User $SSH_USER
+            IdentityFile ~/.ssh/github
+            LogLevel ERROR
+            StrictHostKeyChecking no
+          END
+      - name: Run deploy
+        run: |
+          ssh target "cd test-action && docker compose down && git pull && docker compose build && docker compose up -d --force-recreate"
