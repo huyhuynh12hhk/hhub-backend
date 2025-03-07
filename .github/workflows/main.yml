@@ -49,4 +49,4 @@ jobs:
           END
       - name: Run deploy
         run: |
-          ssh target "cd test-action && docker compose down && git pull && docker compose build && docker compose up -d --force-recreate"
+          ssh target "cd backend && docker compose down && git pull && docker compose build && docker compose up -d --force-recreate"
