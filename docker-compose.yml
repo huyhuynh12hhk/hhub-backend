@@ -87,6 +87,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT}
       - ASPNETCORE_URLS=http://+:5050
       - SIGNER_KEY=${JWT_SIGNER_KEY}
+      - DB_CONNECT=${BLOG_DB_URL}
     env_file:
       - .env
     restart: unless-stopped
