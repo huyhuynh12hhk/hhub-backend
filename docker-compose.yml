@@ -1,0 +1,105 @@
+version: '3.8'
+
+services:
+
+  postgres-db:
+    image: postgres:latest
+    container_name: hh_postgres
+    ports:
+      - '5432:5432'
+    restart: always
+
+    env_file:
+      - ./.env
+    networks:
+      hh-network:
+        ipv4_address: 132.12.0.5
+
+  mysql-db:
+    image: mysql:8.0
+    cap_add:
+      - SYS_NICE
+    restart: always
+    environment:
+      - MYSQL_DATABASE=identity
+      - MYSQL_ROOT_PASSWORD=@123456
+    ports:
+      - '3306:3306'
+    networks:
+      hh-network:
+        ipv4_address: 132.12.0.4
+
+  gateway:
+    build:
+      context: ./api-gateway
+    environment:
+      - SPRING_PROFILES_ACTIVE=${ENVIRONMENT:-development}
+      - JWT_SIGNER_KEY=${JWT_SIGNER_KEY}
+    env_file:
+      - .env
+    restart: unless-stopped
+    ports:
+      - "8888:8888"
+    networks:
+      hh-network:
+        ipv4_address: 132.12.0.8
+
+  identity-api:
+    build:
+      context: ./identity-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=${ENVIRONMENT:-development}
+      - JWT_SIGNER_KEY=${JWT_SIGNER_KEY}
+    env_file:
+      - .env
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql-db
+    networks:
+      hh-network:
+        ipv4_address: 132.12.0.9
+
+  profile-api:
+    build:
+      context: ./profile-service
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT}
+      - DATABASE_URL=${PROFILE_DB_URL}
+      - SECRET_KEY=${JWT_SIGNER_KEY}
+    env_file:
+      - .env
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres-db
+    networks:
+      hh-network:
+        ipv4_address: 132.12.0.10
+
+  blog-api:
+    build:
+      context: ./blog-service
+      dockerfile: blog-api/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT}
+      - ASPNETCORE_URLS=http://+:5050
+      - SIGNER_KEY=${JWT_SIGNER_KEY}
+    env_file:
+      - .env
+    restart: unless-stopped
+    ports:
+      - "5050:5050"
+    networks:
+      hh-network:
+        ipv4_address: 132.12.0.11
+
+
+networks:
+  hh-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 132.12.0.0/16
