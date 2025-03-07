@@ -1,0 +1,40 @@
+server:
+  port: 8888
+
+app:
+  api-prefix: /api/v1
+  def:
+    identity:
+      host: http://localhost:8080
+      root: identity
+    profile:
+      host: http://localhost:8000
+      root: account
+    blog:
+      host: http://localhost:5050
+      root: blog
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: identity_service
+          uri: ${app.def.identity.host}
+          predicates:
+            - Path=${app.api-prefix}/${app.def.identity.root}/**
+          filters:
+            - StripPrefix=3
+        - id: profile_service
+          uri: ${app.def.profile.host}
+          predicates:
+            - Path=${app.api-prefix}/${app.def.profile.root}/**
+          filters:
+            - StripPrefix=3
+        - id: blog_service
+          uri: ${app.def.blog.host}
+          predicates:
+            - Path=${app.api-prefix}/${app.def.blog.root}/**
+          filters:
+            - StripPrefix=3
