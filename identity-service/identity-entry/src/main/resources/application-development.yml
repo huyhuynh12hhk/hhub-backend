@@ -1,0 +1,26 @@
+
+spring:
+  application:
+    name: identity-service
+  datasource:
+    url: "jdbc:mysql://132.12.0.4:3306/identity"
+    driverClassName: "com.mysql.cj.jdbc.Driver"
+    username: root
+    password: "@123456"
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  kafka:
+    bootstrap-servers: localhost:9094
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+jwt:
+  signerKey: "veryveryverysecrettodevelopsignerkey12345625342423424625342423424625342423424625342423424323424_."
+  valid-duration: 3600 # in second
+  refreshable-duration: 36000 # in seconds
+
+app:
+  services:
+    profile: http://localhost:8000/profiles

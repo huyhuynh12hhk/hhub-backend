@@ -30,7 +30,7 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=123456
     networks:
       hh-network:
-        ipv4_address: 132.12.0.7
+        ipv4_address: 132.12.0.2
 
   pgadmin:
     image: dpage/pgadmin4
@@ -63,7 +63,7 @@ services:
       - SYS_NICE
     restart: always
     environment:
-      - MYSQL_DATABASE=root
+      - MYSQL_DATABASE=identity
       - MYSQL_ROOT_PASSWORD=@123456
     ports:
       - '3306:3306'
