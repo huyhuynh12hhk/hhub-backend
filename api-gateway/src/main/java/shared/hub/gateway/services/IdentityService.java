@@ -1,16 +1,15 @@
-package com.hhk.gateway.services;
+package shared.hub.gateway.services;
 
 import org.springframework.stereotype.Service;
-
-import com.hhk.gateway.dtos.ApiResponse;
-import com.hhk.gateway.dtos.request.IntrospectRequest;
-import com.hhk.gateway.dtos.response.IntrospectResponse;
-import com.hhk.gateway.repositories.IdentityClient;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import reactor.core.publisher.Mono;
+import shared.hub.gateway.dtos.ApiResponse;
+import shared.hub.gateway.dtos.request.IntrospectRequest;
+import shared.hub.gateway.dtos.response.IntrospectResponse;
+import shared.hub.gateway.repositories.IdentityClient;
 
 @Service
 @RequiredArgsConstructor

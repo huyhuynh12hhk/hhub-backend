@@ -1,4 +1,4 @@
-package com.hhk.gateway.configuration;
+package shared.hub.gateway.configuration;
 
 import java.util.List;
 
@@ -12,7 +12,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.support.WebClientAdapter;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
-import com.hhk.gateway.repositories.IdentityClient;
+import shared.hub.gateway.repositories.IdentityClient;
 
 @Configuration
 public class WebClientConfiguration {

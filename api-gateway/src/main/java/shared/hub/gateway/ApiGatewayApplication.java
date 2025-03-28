@@ -1,4 +1,4 @@
-package com.hhk.gateway;
+package shared.hub.gateway;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

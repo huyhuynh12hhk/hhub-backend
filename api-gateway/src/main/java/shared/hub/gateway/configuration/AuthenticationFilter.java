@@ -1,4 +1,4 @@
-package com.hhk.gateway.configuration;
+package shared.hub.gateway.configuration;
 
 import java.util.Arrays;
 
@@ -17,8 +17,6 @@ import org.springframework.web.server.ServerWebExchange;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hhk.gateway.dtos.ApiResponse;
-import com.hhk.gateway.services.IdentityService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +24,8 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
+import shared.hub.gateway.dtos.ApiResponse;
+import shared.hub.gateway.services.IdentityService;
 
 @Component
 @Slf4j

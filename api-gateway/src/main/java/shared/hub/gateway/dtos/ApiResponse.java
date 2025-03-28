@@ -1,4 +1,4 @@
-package com.hhk.gateway.dtos;
+package shared.hub.gateway.dtos;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 

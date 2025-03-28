@@ -1,4 +1,4 @@
-package com.hhk.gateway;
+package shared.hub.gateway;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

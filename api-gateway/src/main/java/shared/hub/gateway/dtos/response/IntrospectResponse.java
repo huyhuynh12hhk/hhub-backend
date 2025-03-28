@@ -1,4 +1,4 @@
-package com.hhk.gateway.dtos.response;
+package shared.hub.gateway.dtos.response;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
