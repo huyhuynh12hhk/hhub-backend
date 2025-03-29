@@ -4,8 +4,8 @@ FROM maven:3.9.9-amazoncorretto-21-alpine AS build
 
 # Copy source code and pom.xml file to /app folder
 WORKDIR /app
-COPY pom.xml .
-COPY src ./src
+#COPY pom.xml .
+COPY . .
 
 # Build source code with maven
 RUN mvn package -DskipTests
@@ -17,7 +17,7 @@ FROM amazoncorretto:21-alpine
 EXPOSE 8080
 # Set working folder to App and copy complied file from above step
 WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /app/identity-entry/target/*.jar app.jar
 
 # Command to run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
