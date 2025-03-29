@@ -21,5 +21,5 @@ public interface UserService {
 
     public Page<UserResponse> getUsers(Pageable pageable);
 
-    public UserResponse getUser(String id);
+    public UserResponse getUser(String id, Long version);
 }

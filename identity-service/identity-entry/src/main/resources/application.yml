@@ -7,17 +7,52 @@ spring:
   datasource:
     url: "jdbc:mysql://localhost:3306/identity"
     driverClassName: "com.mysql.cj.jdbc.Driver"
-    username: root
-    password: '@123456'
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:@123456}
   jpa:
+    database: mysql
     hibernate:
       ddl-auto: update
     show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+  jackson:
+    serialization:
+      indent-output: true
+  data:
+    redis:
+      host: localhost
+      port: 6339
+      password: ${REDIS_PASSWORD:testpass}
+      lettuce:
+        pool:
+          max-active: 10 # Maximum number of active connections in the pool
+          max-idle: 5 # Maximum number of idle connections in the pool
+          min-idle: 5 # Minimum number of idle connections in the pool
+      connect-timeout: 30000 # Connection timeout (in milliseconds)
   kafka:
-    bootstrap-servers: localhost:9094
+    bootstrap-servers: localhos:9094
     producer:
+      retries: 0
+      batch-size: 16384
+      buffer-memory: 33554432
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: identity_common
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      auto-commit-interval: 100
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    listener:
+      missing-topics-fatal: false
+      ack-mode: manual_immediate # commit when call acknowledgment.acknowledge()
+  threads:
+    virtual:
+      enabled: true
 jwt:
   signerKey: "veryveryverysecrettodevelopsignerkey12345625342423424625342423424625342423424625342423424323424_."
   valid-duration: 3600 # in second
@@ -26,3 +61,4 @@ jwt:
 app:
   services:
     profile: http://localhost:8000/profiles
+    redisson: redis://localhost:6339

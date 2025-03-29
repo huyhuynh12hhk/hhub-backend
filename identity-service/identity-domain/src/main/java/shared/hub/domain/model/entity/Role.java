@@ -3,11 +3,13 @@ package shared.hub.domain.model.entity;
 import java.util.Set;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToMany;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+@Entity
 @Data
 @Builder
 @NoArgsConstructor

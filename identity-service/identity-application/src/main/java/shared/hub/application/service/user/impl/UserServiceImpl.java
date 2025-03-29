@@ -25,6 +25,7 @@ import shared.hub.application.model.request.CreateUserRequest;
 import shared.hub.application.model.request.UpdateUserRolesRequest;
 import shared.hub.application.model.response.UserResponse;
 import shared.hub.application.service.user.UserService;
+import shared.hub.application.service.user.cache.UserCacheService;
 import shared.hub.domain.model.constant.Roles;
 import shared.hub.domain.model.entity.Role;
 import shared.hub.domain.model.entity.User;
@@ -40,10 +41,12 @@ public class UserServiceImpl implements UserService {
     RoleRepository roleRepository;
     UserMapper userMapper;
     ProfileMapper profileMapper;
+    UserCacheService userCacheService;
     PasswordEncoder passwordEncoder;
     //    ProfileClient profileClient;
     KafkaTemplate<String, Object> kafkaTemplate;
 
+    @Override
     public UserResponse createUser(CreateUserRequest request) {
         User user = userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -83,6 +86,7 @@ public class UserServiceImpl implements UserService {
         return userMapper.toUserResponse(user);
     }
 
+    @Override
     public UserResponse getMyInfo() {
         var context = SecurityContextHolder.getContext();
         String id = context.getAuthentication().getName();
@@ -92,6 +96,7 @@ public class UserServiceImpl implements UserService {
         return userMapper.toUserResponse(user);
     }
 
+    @Override
     public UserResponse updateUserRoles(String userId, UpdateUserRolesRequest request) {
         User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
@@ -101,6 +106,7 @@ public class UserServiceImpl implements UserService {
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
+    @Override
     public UserResponse changeUserPassword(ChangePasswordRequest request) {
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
             throw new AppException(ErrorCode.PASSWORD_NOT_MATCH);
@@ -115,16 +121,18 @@ public class UserServiceImpl implements UserService {
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
+    @Override
     public void deleteUser(String userId) {
         userRepository.deleteById(userId);
     }
 
+    @Override
     public Page<UserResponse> getUsers(Pageable pageable) {
         return userRepository.findAll(pageable).map(userMapper::toUserResponse);
     }
 
-    public UserResponse getUser(String id) {
-        return userMapper.toUserResponse(
-                userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED)));
+    @Override
+    public UserResponse getUser(String id, Long version) {
+        return userMapper.toUserResponse(userCacheService.getUser(id, version).getUser());
     }
 }

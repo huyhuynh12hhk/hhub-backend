@@ -51,9 +51,10 @@ public class UserController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{userId}")
-    ApiResponse<UserResponse> getUser(@PathVariable("userId") String userId) {
+    ApiResponse<UserResponse> getUser(
+            @PathVariable("userId") String userId, @RequestParam(name = "version", required = false) Long version) {
         return ApiResponse.<UserResponse>builder()
-                .data(userService.getUser(userId))
+                .data(userService.getUser(userId, version))
                 .build();
     }
 
