@@ -1,0 +1,73 @@
+
+app:
+  def:
+    identity:
+      host: http://132.12.0.9:8080
+      root: identity
+    profile:
+      host: http://132.12.0.10:8000
+      root: account
+    blog:
+      host: http://132.12.0.11:5050
+      root: blog
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: identity_service
+          uri: ${app.def.identity.host}
+          predicates:
+            - Path=${app.api-prefix}/${app.def.identity.root}/**
+          filters:
+            - StripPrefix=3
+            - name: CircuitBreaker
+              args:
+                name: commonCircuitBreaker
+                fallbackUri: forward:/fallback
+        - id: profile_service
+          uri: ${app.def.profile.host}
+          predicates:
+            - Path=${app.api-prefix}/${app.def.profile.root}/**
+          filters:
+            - StripPrefix=3
+            - name: CircuitBreaker
+              args:
+                name: commonCircuitBreaker
+                fallbackUri: forward:/fallback
+        - id: blog_service
+          uri: ${app.def.blog.host}
+          predicates:
+            - Path=${app.api-prefix}/${app.def.blog.root}/**
+          filters:
+            - StripPrefix=3
+            - name: CircuitBreaker
+              args:
+                name: commonCircuitBreaker
+                fallbackUri: forward:/fallback
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      checkRandom:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        permittedNumberOfCallsInHalfOpenState: 3
+        minimumNumberOfCalls: 5
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+  ratelimiter:
+    instances:
+      backendA:
+        limitForPeriod: 2
+        limitRefreshPeriod: 10s
+        timeoutDuration: 0
+        registerHealthIndicator: true
+        eventConsumerBufferSize: 100
+      backendB:
+        limitForPeriod: 5
+        limitRefreshPeriod: 10s
+        timeoutDuration: 3s
