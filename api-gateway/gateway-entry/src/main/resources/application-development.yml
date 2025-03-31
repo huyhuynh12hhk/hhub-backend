@@ -2,13 +2,13 @@
 app:
   def:
     identity:
-      host: http://localhost:8080
+      host: http://identity-service:8080
       root: identity
     profile:
-      host: http://localhost:8000
+      host: http://profile-service:8000
       root: account
     blog:
-      host: http://localhost:5050
+      host: http://blog-service:5050
       root: blog
 
 spring:
