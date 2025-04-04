@@ -10,6 +10,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+
+  gateway-assurance:
+    name: API Gateway Assurance
+    uses: ./.github/workflows/api-gateway.yml
+
   identity-assurance:
     name: Identity Service Assurance
     uses: ./.github/workflows/identity-service.yml

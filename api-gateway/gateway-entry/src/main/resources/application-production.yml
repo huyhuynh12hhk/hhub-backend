@@ -15,6 +15,9 @@ spring:
   application:
     name: api-gateway
   cloud:
+    circuitbreaker:
+      resilience4j:
+        enabled: true
     gateway:
       routes:
         - id: identity_service
@@ -48,10 +51,25 @@ spring:
                 name: commonCircuitBreaker
                 fallbackUri: forward:/fallback
 
+# Actuator Endpoints
+management:
+  health:
+    circuitbreakers:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+#Resilinece4j
 resilience4j:
+  #  circuit breaker
   circuitbreaker:
     instances:
-      checkRandom:
+      gateway:
         registerHealthIndicator: true
         slidingWindowSize: 10
         permittedNumberOfCallsInHalfOpenState: 3
@@ -59,6 +77,7 @@ resilience4j:
         waitDurationInOpenState: 5s
         failureRateThreshold: 50
         eventConsumerBufferSize: 10
+  # ratelimiter
   ratelimiter:
     instances:
       backendA:
@@ -71,3 +90,14 @@ resilience4j:
         limitForPeriod: 5
         limitRefreshPeriod: 10s
         timeoutDuration: 3s
+  # Resilience4J Timeout Properties
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 3s
+  # Resilience4J Retry Properties
+  retry:
+    configs:
+      default:
+        maxAttempts: 3
+        waitDuration: 2s

@@ -96,7 +96,7 @@ services:
       - '5432:5432'
     restart: always
     env_file:
-      - ./.env
+      - .env
     networks:
       - hh-network
 
@@ -134,7 +134,7 @@ services:
   gateway:
     container_name: gateway
     build:
-      context: ./api-gateway
+      context: ../api-gateway
     environment:
       - SPRING_PROFILES_ACTIVE=${ENVIRONMENT:-development}
       - JWT_SIGNER_KEY=${JWT_SIGNER_KEY}
@@ -148,7 +148,7 @@ services:
   identity-api:
     container_name: identity-service
     build:
-      context: ./identity-service
+      context: ../identity-service
     environment:
       - SPRING_PROFILES_ACTIVE=${ENVIRONMENT:-development}
       - JWT_SIGNER_KEY=${JWT_SIGNER_KEY}
@@ -165,7 +165,7 @@ services:
   profile-api:
     container_name: profile-service
     build:
-      context: ./profile-service
+      context: ../profile-service
     environment:
       - ENVIRONMENT=${ENVIRONMENT}
       - DATABASE_URL=${PROFILE_DB_URL}
@@ -183,8 +183,8 @@ services:
   blog-api:
     container_name: blog-service
     build:
-      context: ./blog-service
-      dockerfile: blog-api/Dockerfile
+      context: ../blog-service
+      dockerfile: ../blog-service/blog-api/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT}
       - ASPNETCORE_URLS=http://+:5050

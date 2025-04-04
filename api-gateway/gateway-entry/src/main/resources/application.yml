@@ -18,6 +18,9 @@ spring:
   application:
     name: api-gateway
   cloud:
+    circuitbreaker:
+      resilience4j:
+        enabled: true
     gateway:
       routes:
         - id: identity_service
@@ -28,7 +31,7 @@ spring:
             - StripPrefix=3
             - name: CircuitBreaker
               args:
-                name: commonCircuitBreaker
+                name: identity_break
                 fallbackUri: forward:/fallback
         - id: profile_service
           uri: ${app.def.profile.host}
@@ -38,7 +41,7 @@ spring:
             - StripPrefix=3
             - name: CircuitBreaker
               args:
-                name: commonCircuitBreaker
+                name: profile_break
                 fallbackUri: forward:/fallback
         - id: blog_service
           uri: ${app.def.blog.host}
@@ -48,20 +51,41 @@ spring:
             - StripPrefix=3
             - name: CircuitBreaker
               args:
-                name: commonCircuitBreaker
+                name: blog_break
                 fallbackUri: forward:/fallback
 
+# Actuator Endpoints
+management:
+  health:
+    circuitbreakers:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include:
+          - '*'
+  endpoint:
+    health:
+      show-details: always
+#    prometheus:
+#      enabled: true
+
+#Resilinece4j
 resilience4j:
+#  circuit breaker
   circuitbreaker:
-    instances:
-      checkRandom:
+    configs:
+      default:
         registerHealthIndicator: true
         slidingWindowSize: 10
+        slidingWindowType: COUNT_BASED
         permittedNumberOfCallsInHalfOpenState: 3
         minimumNumberOfCalls: 5
-        waitDurationInOpenState: 5s
+        waitDurationInOpenState: 300ms
         failureRateThreshold: 50
         eventConsumerBufferSize: 10
+
+# ratelimiter
   ratelimiter:
     instances:
       backendA:
@@ -74,12 +98,14 @@ resilience4j:
         limitForPeriod: 5
         limitRefreshPeriod: 10s
         timeoutDuration: 3s
-#  timelimiter:
-#    time-limiter-aspect-order: 398
+# Resilience4J Timeout Properties
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 3s
+# Resilience4J Retry Properties
+#  retry:
 #    configs:
 #      default:
-#        timeoutDuration: 1s
-#        cancelRunningFuture: false
-#    instances:
-#      backendB:
-#        timeoutDuration: 250ms
+#        maxAttempts: 3
+#        waitDuration: 2s
