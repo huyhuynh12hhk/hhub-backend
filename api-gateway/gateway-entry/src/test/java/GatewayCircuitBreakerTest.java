@@ -141,8 +141,8 @@ public class GatewayCircuitBreakerTest {
                 .when()
                 .get("/actuator/health")
                 .then()
-                .log()
-                .all()
+//                .log()
+//                .all()
                 .body(statePath, Matchers.equalTo(HALF_OPEN));
         log.info("Circuit breaker is in state: HALF OPEN");
 
@@ -153,8 +153,8 @@ public class GatewayCircuitBreakerTest {
                     .when()
                     .get("/api/v1/blog/posts")
                     .then()
-                    .log()
-                    .all()
+//                    .log()
+//                    .all()
                     .statusCode(200);
             successCount += 1;
             log.info("Request success in turn: {}", successCount);
