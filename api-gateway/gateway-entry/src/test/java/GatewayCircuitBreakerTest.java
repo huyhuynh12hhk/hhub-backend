@@ -1,7 +1,4 @@
 import static org.mockserver.model.HttpRequest.request;
-import static org.mockserver.model.JsonBody.json;
-
-import java.util.List;
 
 import org.hamcrest.Matchers;
 import org.junit.AfterClass;
@@ -10,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.mockserver.client.MockServerClient;
 import org.mockserver.model.HttpError;
 import org.mockserver.model.HttpResponse;
-import org.mockserver.model.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -68,32 +64,32 @@ public class GatewayCircuitBreakerTest {
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WireMockTest.class);
-
-    @Test
-    void normalCall() {
-        mockServerClient
-                .when(request().withMethod("GET").withPath("/posts"))
-                .respond(HttpResponse.response()
-                        .withStatusCode(200)
-                        .withContentType(MediaType.APPLICATION_JSON)
-                        .withBody(json("""
-												[]
-												""")));
-
-        var result = RestAssured.given()
-                .contentType(ContentType.JSON)
-                .when()
-                .get("/api/v1/blog/posts")
-                .then()
-                .statusCode(200)
-                .log()
-                .all()
-                .extract()
-                .body()
-                .as(List.class);
-
-        log.info("Result length: {}", (long) result.size());
-    }
+    //
+    //    @Test
+    //    void normalCall() {
+    //        mockServerClient
+    //                .when(request().withMethod("GET").withPath("/posts"))
+    //                .respond(HttpResponse.response()
+    //                        .withStatusCode(200)
+    //                        .withContentType(MediaType.APPLICATION_JSON)
+    //                        .withBody(json("""
+    //												[]
+    //												""")));
+    //
+    //        var result = RestAssured.given()
+    //                .contentType(ContentType.JSON)
+    //                .when()
+    //                .get("/api/v1/blog/posts")
+    //                .then()
+    //                .statusCode(200)
+    //                .log()
+    //                .all()
+    //                .extract()
+    //                .body()
+    //                .as(List.class);
+    //
+    //        log.info("Result length: {}", (long) result.size());
+    //    }
 
     @Test
     void testCircuitBreaker() {

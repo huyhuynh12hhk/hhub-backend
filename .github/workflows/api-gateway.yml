@@ -20,7 +20,7 @@ jobs:
           java-version: '21'
 
       - name: Test
-        working-directory: api-service
+        working-directory: api-gateway
         run: |-
           mvn clean test
         env:
