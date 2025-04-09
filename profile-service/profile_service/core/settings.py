@@ -16,7 +16,6 @@ if environment == "production":
 
 environ.Env.read_env(os.path.join(ROOT_DIR, env_file))
 
-SECRET_KEY = env.str('SECRET_KEY')
 KEYCLOAK_URL=env.str('KEYCLOAK_URL')
 KEYCLOAK_REALM=env.str('KEYCLOAK_REALM')
 KEYCLOAK_CLIENT=env.str('KEYCLOAK_CLIENT')
