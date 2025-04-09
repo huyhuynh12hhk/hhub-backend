@@ -14,6 +14,22 @@ app:
 spring:
   application:
     name: api-gateway
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://idp-keycloak:8181/realms/hhub/protocol/openid-connect/certs
+      client:
+        provider:
+          keycloak:
+            issuer-uri: http://idp-keycloak:8181/realms/hhub
+        registration:
+          internal-service:
+            provider: keycloak
+            client-id: test-service-client
+            client-secret: AJBuZX6Phe3qOWjIqztNEln6RGYe6343
+            authorization-grant-type: authorization_code
+            scope: openid
   cloud:
     circuitbreaker:
       resilience4j:

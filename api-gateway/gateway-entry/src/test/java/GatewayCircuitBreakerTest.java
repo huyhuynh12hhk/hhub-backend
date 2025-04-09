@@ -1,4 +1,7 @@
 import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.JsonBody.json;
+
+import java.util.List;
 
 import org.hamcrest.Matchers;
 import org.junit.AfterClass;
@@ -6,8 +9,7 @@ import org.junit.jupiter.api.*;
 import org.mockserver.client.MockServerClient;
 import org.mockserver.model.HttpError;
 import org.mockserver.model.HttpResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.mockserver.model.MediaType;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -17,8 +19,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-import com.github.tomakehurst.wiremock.junit5.WireMockTest;
-
+import dasniko.testcontainers.keycloak.KeycloakContainer;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +39,7 @@ public class GatewayCircuitBreakerTest {
     private static final String HALF_OPEN = "HALF_OPEN";
     private static final String CLOSED = "CLOSED";
     private static final String OPEN = "OPEN";
+    private static final String REALM = "test-realm-v0.1";
 
     @LocalServerPort
     private Integer port;
@@ -45,6 +47,13 @@ public class GatewayCircuitBreakerTest {
     @Container
     static MockServerContainer mockServerContainer = new MockServerContainer(
             DockerImageName.parse("mockserver/mockserver").withTag("5.15.0"));
+
+    @Container
+    static KeycloakContainer keycloak =
+            new KeycloakContainer("quay.io/keycloak/keycloak:26.1.4").withRealmImportFile("realm-export.json")
+
+            //            .withExposedPorts(8181)
+            ;
 
     static MockServerClient mockServerClient;
 
@@ -54,47 +63,62 @@ public class GatewayCircuitBreakerTest {
         log.info("Start init server client...");
         mockServerClient = new MockServerClient(mockServerContainer.getHost(), mockServerContainer.getServerPort());
         registry.add("app.def.blog.host", mockServerContainer::getEndpoint);
+
+        registry.add(
+                "spring.security.oauth2.client.provider.keycloak.issuer-uri",
+                () -> keycloak.getAuthServerUrl() + "/realms/" + REALM);
+        registry.add(
+                "spring.security.oauth2.resourceserver.jwt.jwk-set-uri",
+                () -> keycloak.getAuthServerUrl() + "/realms/" + REALM + "/protocol/openid-connect/certs");
     }
 
     @BeforeEach
     void setUp() {
-        log.info("SetUp");
+        log.info("Start new test");
         RestAssured.baseURI = "http://localhost";
         RestAssured.port = port;
     }
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(WireMockTest.class);
-
-    //    @Test
-    //    @Order(1)
-    //    void normalCall() {
-    //        mockServerClient
-    //                .when(request().withMethod("GET").withPath("/posts"))
-    //                .respond(HttpResponse.response()
-    //                        .withStatusCode(200)
-    //                        .withContentType(MediaType.APPLICATION_JSON)
-    //                        .withBody(json("""
-    //                                []
-    //                                """)));
-    //
-    //        var result = RestAssured.given()
-    //                .contentType(ContentType.JSON)
-    //                .when()
-    //                .get("/api/v1/blog/posts")
-    //                .then()
-    //                .statusCode(200)
-    //                .log()
-    //                .all()
-    //                .extract()
-    //                .body()
-    //                .as(List.class);
-    //
-    //        log.info("Result length: {}", (long) result.size());
-    //    }
+    @AfterEach
+    void cleanUp() {
+        mockServerClient.reset();
+    }
 
     @Test
-    //    @Order(2)
-    void testCircuitBreaker() {
+    @Order(1)
+    void shouldStart() {}
+
+    @Test
+    @Order(1)
+    void shouldRunInRightFlow() {
+        mockServerClient
+                .when(request().withMethod("GET").withPath("/posts"))
+                .respond(HttpResponse.response()
+                        .withStatusCode(200)
+                        .withContentType(MediaType.APPLICATION_JSON)
+                        .withBody(json("""
+								[]
+								""")));
+
+        var result = RestAssured.given()
+                .contentType(ContentType.JSON)
+                .when()
+                .get("/api/v1/blog/posts")
+                .then()
+                .statusCode(200)
+                .log()
+                .all()
+                .extract()
+                .body()
+                .as(List.class);
+
+        log.info("Result length: {}", (long) result.size());
+    }
+
+    @Test
+    @Order(2)
+    void circuitBreaker_shouldOpenAndClose() {
+
         var statePath = "components.circuitBreakers.details.blog_break.details.state";
 
         mockServerClient

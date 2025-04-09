@@ -37,6 +37,5 @@ jobs:
         run: |-    
           make test
         env:
-          SECRET_KEY: testkey_PVFkxm5fVfHyNBpCFxJVQ7JX2PgtYL
           DATABASE_URL: postgres://postgres:pgtest@db:5432/postgres
           ENVIRONMENT: production

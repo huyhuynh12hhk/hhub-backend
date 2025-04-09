@@ -162,7 +162,6 @@ services:
       context: ../api-gateway
     environment:
       - SPRING_PROFILES_ACTIVE=${ENVIRONMENT:-development}
-      - JWT_SIGNER_KEY=${JWT_SIGNER_KEY}
     env_file:
       - .env
     ports:
@@ -177,7 +176,6 @@ services:
     environment:
       - ENVIRONMENT=${ENVIRONMENT}
       - DATABASE_URL=${PROFILE_DB_URL}
-      - SECRET_KEY=${JWT_SIGNER_KEY}
     env_file:
       - .env
     restart: unless-stopped
@@ -196,7 +194,6 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT}
       - ASPNETCORE_URLS=http://+:5050
-      - SIGNER_KEY=${JWT_SIGNER_KEY}
       - DB_CONNECT=${BLOG_DB_URL}
     env_file:
       - .env
