@@ -37,5 +37,9 @@ jobs:
         run: |-    
           make test
         env:
+          KEYCLOAK_URL: http://localhost:8181
+          KEYCLOAK_REALM: test-realm-v0.1
+          KEYCLOAK_CLIENT: test-internal-client
+          KEYCLOAK_CLIENT_SECRET: EJ9rEFAgBiSiACWP636lWWvlHpCkThMX
           DATABASE_URL: postgres://postgres:pgtest@db:5432/postgres
           ENVIRONMENT: production
