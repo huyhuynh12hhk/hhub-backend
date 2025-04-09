@@ -1,11 +1,11 @@
-package shared.hub.controller.http;
+package shared.hub.gateway.controller.http;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import shared.hub.application.model.ApiResponse;
+import shared.hub.gateway.application.model.ApiResponse;
 
 @RestController
 @RequestMapping("/fallback")

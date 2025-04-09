@@ -1,4 +1,4 @@
-package shared.hub.application.model.response;
+package shared.hub.gateway.application.model.request;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -8,6 +8,6 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class IntrospectResponse {
-    boolean valid;
+public class IntrospectRequest {
+    String token;
 }

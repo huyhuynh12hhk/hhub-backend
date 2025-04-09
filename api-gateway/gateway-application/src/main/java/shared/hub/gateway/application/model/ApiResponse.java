@@ -1,4 +1,4 @@
-package shared.hub.application.model;
+package shared.hub.gateway.application.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 

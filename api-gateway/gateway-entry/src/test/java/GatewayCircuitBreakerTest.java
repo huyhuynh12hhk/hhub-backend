@@ -2,8 +2,7 @@ import static org.mockserver.model.HttpRequest.request;
 
 import org.hamcrest.Matchers;
 import org.junit.AfterClass;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockserver.client.MockServerClient;
 import org.mockserver.model.HttpError;
 import org.mockserver.model.HttpResponse;
@@ -23,12 +22,13 @@ import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import lombok.extern.slf4j.Slf4j;
-import shared.hub.StartApplication;
+import shared.hub.gateway.GatewayStartApplication;
 
 // @Import({TestcontainersConfiguration.class, CommonTestConfiguration.class})
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = StartApplication.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = GatewayStartApplication.class)
 @Testcontainers
 @Slf4j
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class GatewayCircuitBreakerTest {
 
     private final int breakLimit = 5;
@@ -64,8 +64,9 @@ public class GatewayCircuitBreakerTest {
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WireMockTest.class);
-    //
+
     //    @Test
+    //    @Order(1)
     //    void normalCall() {
     //        mockServerClient
     //                .when(request().withMethod("GET").withPath("/posts"))
@@ -73,8 +74,8 @@ public class GatewayCircuitBreakerTest {
     //                        .withStatusCode(200)
     //                        .withContentType(MediaType.APPLICATION_JSON)
     //                        .withBody(json("""
-    //												[]
-    //												""")));
+    //                                []
+    //                                """)));
     //
     //        var result = RestAssured.given()
     //                .contentType(ContentType.JSON)
@@ -92,6 +93,7 @@ public class GatewayCircuitBreakerTest {
     //    }
 
     @Test
+    //    @Order(2)
     void testCircuitBreaker() {
         var statePath = "components.circuitBreakers.details.blog_break.details.state";
 
@@ -141,8 +143,8 @@ public class GatewayCircuitBreakerTest {
                 .when()
                 .get("/actuator/health")
                 .then()
-//                .log()
-//                .all()
+                //                .log()
+                //                .all()
                 .body(statePath, Matchers.equalTo(HALF_OPEN));
         log.info("Circuit breaker is in state: HALF OPEN");
 
@@ -153,8 +155,8 @@ public class GatewayCircuitBreakerTest {
                     .when()
                     .get("/api/v1/blog/posts")
                     .then()
-//                    .log()
-//                    .all()
+                    //                    .log()
+                    //                    .all()
                     .statusCode(200);
             successCount += 1;
             log.info("Request success in turn: {}", successCount);
