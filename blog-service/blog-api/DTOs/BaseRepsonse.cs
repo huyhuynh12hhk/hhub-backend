@@ -1,11 +1,24 @@
-﻿using System.Net;
-
-namespace blog_api.DTOs
+﻿namespace blog_api.DTOs
 {
-    public class BaseRepsonse<T>
+    public class BaseResponse
     {
         public int Code { get; set; }
         public string? Message { get; set; }
+
+        public static BaseResponse Error(string message, int code = 400)
+        {
+            return new BaseResponse
+            {
+                Code = code,
+                Message = message
+            };
+        }
+
+    }
+
+    public class BaseRepsonse<T> : BaseResponse where T : class
+    {
+
         public T? Data { get; set; }
 
         public static BaseRepsonse<T> Success(T value)
@@ -14,15 +27,6 @@ namespace blog_api.DTOs
             {
                 Code = 200,
                 Data = value
-            };
-        }
-
-        public static BaseRepsonse<T> Error(string message, int code = 400)
-        {
-            return new BaseRepsonse<T>
-            {
-                Code = code,
-                Message = message
             };
         }
 

@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace blog_api.Controllers
 {
+    [Authorize]
     [Route("comments")]
     [ApiController]
     public class CommentsController : ControllerBase
@@ -39,7 +40,7 @@ namespace blog_api.Controllers
                 ));
         }
 
-
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<IActionResult> Get([Required] string id)
         {
