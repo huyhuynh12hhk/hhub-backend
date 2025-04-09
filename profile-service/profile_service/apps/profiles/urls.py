@@ -1,7 +1,5 @@
 from rest_framework.routers import SimpleRouter, DefaultRouter
 
-from django.conf import settings
-
 from profile_service.apps.profiles.views import ProfileViewSet
 
 # print(f"Path: {settings.BASE_DIR}")

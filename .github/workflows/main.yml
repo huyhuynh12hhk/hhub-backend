@@ -15,10 +15,6 @@ jobs:
     name: API Gateway Assurance
     uses: ./.github/workflows/api-gateway.yml
 
-  identity-assurance:
-    name: Identity Service Assurance
-    uses: ./.github/workflows/identity-service.yml
-
   profile-assurance:
     name: Profile Service Assurance
     uses: ./.github/workflows/profile-service.yml

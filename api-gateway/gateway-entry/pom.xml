@@ -46,7 +46,7 @@
                             <goal>repackage</goal>
                         </goals>
                         <configuration>
-                            <mainClass>shared.hub.StartApplication</mainClass>
+                            <mainClass>shared.hub.gateway.GatewayStartApplication</mainClass>
                         </configuration>
                     </execution>
                 </executions>

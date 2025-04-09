@@ -1,6 +1,12 @@
 server:
   port: 8888
 
+debug: true
+
+#logging:
+#  level:
+#    org.springframework.security: DEBUG
+
 app:
   api-prefix: /api/v1
   def:
@@ -17,22 +23,29 @@ app:
 spring:
   application:
     name: api-gateway
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8181/realms/hhub/protocol/openid-connect/certs
+      client:
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8181/realms/hhub
+        registration:
+          internal-service:
+            provider: keycloak
+            client-id: test-service-client
+            client-secret: AJBuZX6Phe3qOWjIqztNEln6RGYe6343
+            authorization-grant-type: authorization_code
+            scope: openid
   cloud:
     circuitbreaker:
       resilience4j:
         enabled: true
     gateway:
       routes:
-        - id: identity_service
-          uri: ${app.def.identity.host}
-          predicates:
-            - Path=${app.api-prefix}/${app.def.identity.root}/**
-          filters:
-            - StripPrefix=3
-            - name: CircuitBreaker
-              args:
-                name: identity_break
-                fallbackUri: forward:/fallback
+
         - id: profile_service
           uri: ${app.def.profile.host}
           predicates:

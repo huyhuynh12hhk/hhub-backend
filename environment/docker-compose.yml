@@ -69,7 +69,6 @@ services:
     environment:
       - ENVIRONMENT=${ENVIRONMENT}
       - DATABASE_URL=${PROFILE_DB_URL}
-      - SECRET_KEY=${JWT_SIGNER_KEY}
     env_file:
       - .env
     restart: unless-stopped

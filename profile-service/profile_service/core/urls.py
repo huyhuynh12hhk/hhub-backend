@@ -5,11 +5,12 @@ from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 import profile_service.apps.profiles.urls
-
+# from profile_service.apps.profiles.views import MyAPIView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('', include(profile_service.apps.profiles.urls)),
+    # path('dummy', MyAPIView.as_view(), name="dummy")
 ]
 
 # if settings.DEBUG:

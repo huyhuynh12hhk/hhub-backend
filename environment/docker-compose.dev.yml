@@ -100,6 +100,28 @@ services:
     networks:
       - hh-network
 
+  idp-keycloak:
+    container_name: idp-keycloak
+    image: quay.io/keycloak/keycloak:26.1.4
+    command: [ "start-dev", "--import-realm" ]
+    environment:
+      DB_VENDOR: MYSQL
+      DB_ADDR: mysqldb
+      DB_PORT: 3306
+      DB_DATABASE: keycloak
+      DB_USER: root
+      DB_PASSWORD: '@123456'
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8181:8080"
+    volumes:
+      - ./dev/keycloak/realms/:/opt/keycloak/data/import/
+    depends_on:
+      - mysql-db
+    networks:
+      - hh-network
+
   mysql-db:
     image: mysql:8.0
     container_name: mysqldb
@@ -109,6 +131,9 @@ services:
     environment:
       - MYSQL_DATABASE=identity
       - MYSQL_ROOT_PASSWORD=@123456
+    volumes:
+      - ./dev/data/mysql:/var/lib/mysql
+      - ./dev/script/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - '3306:3306'
     networks:
@@ -137,28 +162,10 @@ services:
       context: ../api-gateway
     environment:
       - SPRING_PROFILES_ACTIVE=${ENVIRONMENT:-development}
-      - JWT_SIGNER_KEY=${JWT_SIGNER_KEY}
     env_file:
       - .env
     ports:
       - "8888:8888"
-    networks:
-      - hh-network
-
-  identity-api:
-    container_name: identity-service
-    build:
-      context: ../identity-service
-    environment:
-      - SPRING_PROFILES_ACTIVE=${ENVIRONMENT:-development}
-      - JWT_SIGNER_KEY=${JWT_SIGNER_KEY}
-    env_file:
-      - .env
-    restart: unless-stopped
-    ports:
-      - "8080:8080"
-    depends_on:
-      - mysql-db
     networks:
       - hh-network
 
@@ -169,7 +176,6 @@ services:
     environment:
       - ENVIRONMENT=${ENVIRONMENT}
       - DATABASE_URL=${PROFILE_DB_URL}
-      - SECRET_KEY=${JWT_SIGNER_KEY}
     env_file:
       - .env
     restart: unless-stopped
@@ -188,7 +194,6 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT}
       - ASPNETCORE_URLS=http://+:5050
-      - SIGNER_KEY=${JWT_SIGNER_KEY}
       - DB_CONNECT=${BLOG_DB_URL}
     env_file:
       - .env

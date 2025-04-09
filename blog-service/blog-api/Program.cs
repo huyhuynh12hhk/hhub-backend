@@ -11,14 +11,14 @@ var mongoConfig = config.GetSection("MongoDB")!.Get<MongoDBSettings>()!;
 var env = builder.Environment.EnvironmentName;
 
 string connectionString = env.ToLower().Equals("production") ? config["DB_CONNECT"]! : mongoConfig.ConnectionString!;
-// Add services to the container.
 
+builder.Services.AddControllers()
+    //.AddNewtonsoftJson()
+    ;
 
+ConfigExtensions.SetupNewtonsoftJson();
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddServiceSwagger(config);
 builder.Services.AddJWTAuthorization(config);
 
 builder.Services.AddSingleton<IMongoClient>(_ =>
@@ -40,8 +40,7 @@ builder.Services.AddScoped<ICommentService, CommentService>();
 var app = builder.Build();
 
 app.Logger.LogInformation($"Start application in \"{env}\" environment.");
-app.UseSwagger();
-app.UseSwaggerUI();
+app.UseServiceSwagger(config);
 
 app.UseAuthentication();
 app.UseAuthorization();

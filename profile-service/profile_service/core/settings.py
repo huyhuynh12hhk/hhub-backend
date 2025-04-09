@@ -16,13 +16,15 @@ if environment == "production":
 
 environ.Env.read_env(os.path.join(ROOT_DIR, env_file))
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env.str('SECRET_KEY')
+KEYCLOAK_URL=env.str('KEYCLOAK_URL')
+KEYCLOAK_REALM=env.str('KEYCLOAK_REALM')
+KEYCLOAK_CLIENT=env.str('KEYCLOAK_CLIENT')
+KEYCLOAK_CLIENT_SECRET=env.str('KEYCLOAK_CLIENT_SECRET')
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', default=False)
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
+
 
 INTERNAL_IPS = [
     '127.0.0.1',
@@ -52,8 +54,11 @@ INSTALLED_APPS = THIRD_PARTY_APPS + INSTALLED_APPS + LOCAL_APPS
 THIRD_PARTY_MIDDLEWARE = [
     'djangorestframework_camel_case.middleware.CamelCaseMiddleWare',
 ]
+LOCAL_MIDDLEWARE = [
+    # 'profile_service.apps.common.middlewares.keycloak.KeycloakMiddleware',
+]
 
-MIDDLEWARE = [
+MIDDLEWARE = LOCAL_MIDDLEWARE + [
                  "django.middleware.security.SecurityMiddleware",
                  "django.contrib.sessions.middleware.SessionMiddleware",
                  "django.middleware.common.CommonMiddleware",
@@ -139,9 +144,11 @@ REST_FRAMEWORK = {
     ],
     'EXCEPTION_HANDLER': 'profile_service.apps.common.exceptions.global.custom_exception_handler',
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    # 'DEFAULT_AUTHENTICATION_CLASSES': (
-    #     'profile_service.apps.common.authentications.JWTAuthentication',
-    # ),
+
+    # keycloak oauth2 mechanism
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'profile_service.apps.common.authentications.keycloak.KeycloakAuthentication',
+    ),
 
     'DEFAULTPARSERCLASSES': (
         'djangorestframework_camel_case.parser.CamelCaseFormParser',
@@ -152,4 +159,18 @@ REST_FRAMEWORK = {
         'no_underscore_before_number': True,
     },
     'TEST_REQUEST_DEFAULT_FORMAT': 'json'
+}
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "WARNING",
+    },
 }
