@@ -1,11 +1,8 @@
-from http.client import HTTPException
-
-from django.http import Http404, HttpResponse
-from django.shortcuts import render
+from django.http import Http404
 
 # Create your views here.
 
-from django.shortcuts import render
+import django_filters.rest_framework
 from rest_framework import viewsets, status, permissions, exceptions
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -19,9 +16,13 @@ from profile_service.apps.profiles.serializers.profile import ProfileWriteSerial
     ToggleActiveSerializer
 
 
+# Create your views here.
+
+
 class ProfileViewSet(viewsets.ModelViewSet):
     queryset = UserProfile.objects.all()
     parser_classes = (NoUnderscoreBeforeNumberCamelCaseJSONParser,)
+    # filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
 
     def get_serializer_class(self):
 
@@ -64,6 +65,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
             raise exceptions.NotFound("Profile not found.")
 
     def retrieve(self, request, *args, **kwargs):
+        print("got here")
         instance = self.get_object()  # Uses our custom lookup
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
@@ -108,3 +110,5 @@ class ProfileViewSet(viewsets.ModelViewSet):
             )
             , status=status.HTTP_202_ACCEPTED
         )
+
+
