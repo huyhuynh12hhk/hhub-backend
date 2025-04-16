@@ -1,0 +1,32 @@
+package routers
+
+import (
+	"hhub/connection-service/internal/controllers"
+
+	"github.com/gin-gonic/gin"
+)
+
+type FollowRouter struct{}
+
+func (fr *FollowRouter) InitFollowRouter(
+	router *gin.RouterGroup, 
+	controller *controllers.FollowController,
+){
+	if controller==nil{
+		panic("Follow controller has not been initialized.")
+	}
+
+	// Public end point
+	
+	
+	// Private end point
+	followPrivateRoute := router.Group("/follows")
+	{
+		followPrivateRoute.GET("/:ownerId/followers", controller.GetFollower)
+		followPrivateRoute.GET("/:ownerId/followings", controller.GetFollowings)
+		followPrivateRoute.POST("", controller.CreateFollow)
+		followPrivateRoute.PATCH("", controller.UpdateFollowStatus)
+		followPrivateRoute.DELETE("/:subscriberId/:targetId", controller.RemoveFollow)
+	}
+
+}
