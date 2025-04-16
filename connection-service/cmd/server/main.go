@@ -1,8 +1,16 @@
 package main
 
-import "hhub/connection-service/internal/initializer"
+import (
+	"hhub/connection-service/global"
+	"hhub/connection-service/internal/initializer"
+	"strconv"
+)
 
 func main() {
 
-	initializer.Run()
+	app := initializer.Build()
+
+	
+
+	app.Run(":"+strconv.Itoa(global.Config.Server.Port))
 }

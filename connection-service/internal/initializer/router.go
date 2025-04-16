@@ -30,8 +30,8 @@ func UseRouting() *gin.Engine{
 	// 	mainRoute.GET("health")
 	// }
 	{
-		followRouter.InitFollowRouter(mainRoute, followController)
-		friendRouter.InitFriendRouter(mainRoute, friendController)
+		followRouter.InitFollowRouter(mainRoute, followController, nil)
+		friendRouter.InitFriendRouter(mainRoute, friendController, nil)
 	}
 
 	return r

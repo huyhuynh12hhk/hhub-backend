@@ -11,6 +11,8 @@ type FriendRouter struct{}
 func (fr *FriendRouter) InitFriendRouter(
 	router *gin.RouterGroup,
 	controller *controllers.FriendController,
+	// TODO: Implement a dependency injection container will affect performance?
+	authentication gin.HandlerFunc,
 ){
 	if controller==nil{
 		panic("Follow controller has not been initialized.")

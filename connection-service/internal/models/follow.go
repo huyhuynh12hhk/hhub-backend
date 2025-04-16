@@ -26,11 +26,11 @@ func (ct followState) Value() (driver.Value, error) {
 
 type Follow struct {
 	gorm.Model
-	SubscriberId   uuid.UUID   `gorm:"column:subscriber_id; type:char(36);not null;index:idx_subscriber_id"`
-	SubscriberName string      `gorm:"column:subscriber_name; type:varchar(255);not null"`
-	TargetId       uuid.UUID   `gorm:"column:target_id; type:char(36);not null;index:idx_target_id"`
-	TargetName     string      `gorm:"column:target_name; type:varchar(255);not null"`
-	State          followState `gorm:"column:state; type:enum('ALL','PERSONALIZE','NONE');not null"`
+	SubscriberId uuid.UUID   `gorm:"column:subscriber_id; type:char(36);not null;index:idx_subscriber_id"`
+	Subscriber   UserInfo  `gorm:"foreignKey:subscriber_id"`
+	TargetId     uuid.UUID   `gorm:"column:target_id; type:char(36);not null;index:idx_target_id"`
+	Target       UserInfo   `gorm:"foreignKey:target_id"`
+	State        followState `gorm:"column:state; type:enum('ALL','PERSONALIZE','NONE');not null"`
 }
 
 func (Follow) TableName() string {

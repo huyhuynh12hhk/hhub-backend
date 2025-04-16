@@ -49,6 +49,7 @@ func migrateTables(){
 	err:= global.MySQL.AutoMigrate(
 		&models.FriendRequest{},
 		&models.Follow{},
+		&models.UserInfo{},
 	)
 	handleError(err, "Failed to migrate database")
 }
