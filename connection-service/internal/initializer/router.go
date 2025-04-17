@@ -2,36 +2,36 @@ package initializer
 
 import (
 	"hhub/connection-service/global"
+	"hhub/connection-service/internal/middlewares"
 	"hhub/connection-service/internal/routers"
 
 	"github.com/gin-gonic/gin"
 )
 
-func UseRouting() *gin.Engine{
+func UseRouting() *gin.Engine {
 	// Add router initialization logic here
 	r := gin.Default()
 
-
 	// Middleware setup
-	// r.Use() 
+	// r.Use()
 
 	// Controller endpoints
-	
-	prefix:= global.Config.Server.Prefix
-	if prefix==""{
-		prefix = "/api/v1"
-	}
+
+	prefix := global.Config.Server.Prefix
+	// if prefix==""{
+	// 	prefix = "/api/v1"
+	// }
 
 	friendRouter := routers.AppRouter.Friend
 	followRouter := routers.AppRouter.Follow
 
-	mainRoute:= r.Group(prefix)
+	mainRoute := r.Group(prefix)
 	// {
 	// 	mainRoute.GET("health")
 	// }
 	{
-		followRouter.InitFollowRouter(mainRoute, followController, nil)
-		friendRouter.InitFriendRouter(mainRoute, friendController, nil)
+		followRouter.InitFollowRouter(mainRoute, followController, middlewares.Authentication())
+		friendRouter.InitFriendRouter(mainRoute, friendController, middlewares.Authentication())
 	}
 
 	return r

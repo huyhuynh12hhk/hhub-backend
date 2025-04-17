@@ -1,7 +1,6 @@
 package dtos
 
-type UpdateFollowStatusRequest struct{
-	Status string `json:"status"`
-	Target string `json:"target"`	
+type UpdateFollowStatusRequest struct {
+	Status   string `json:"status"`
+	Producer UserVO `json:"producer"`
 }
-

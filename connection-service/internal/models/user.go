@@ -1,6 +1,6 @@
 package models
 
-import ()
+import "hhub/connection-service/internal/dtos"
 
 type UserInfo struct {
 	UID      string `gorm:"column:user_id; type:char(36);not null;primaryKey"`
@@ -10,4 +10,13 @@ type UserInfo struct {
 
 func (UserInfo) TableName() string {
 	return "connection_user_info"
+}
+
+func (m *UserInfo) ToResponse() dtos.UserVO{
+	
+	return dtos.UserVO{
+		Id: m.UID,
+		Name: m.Name,
+		ImageUrl: m.ImageUrl,
+	}
 }

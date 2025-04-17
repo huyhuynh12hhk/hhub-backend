@@ -27,7 +27,9 @@ func InitFollowController() (*controllers.FollowController, error) {
 
 func InitFriendController() (*controllers.FriendController, error) {
 	iFriendRepository := repositories_friend.NewFriendRepository()
-	iFriendService := services_friend.NewFriendService(iFriendRepository)
+	iFollowRepository := repositories_follow.NewFollowRepository()
+	iFollowService := services_follow.NewFollowService(iFollowRepository)
+	iFriendService := services_friend.NewFriendService(iFriendRepository, iFollowService)
 	friendController := controllers.NewFriendController(iFriendService)
 	return friendController, nil
 }
