@@ -1,8 +1,9 @@
 package env
 
 type Config struct {
-	Server ServerSetting `mapstructure:"server"`
-	MySQL  MySQLSettings `mapstructure:"mysql"`
+	Server   ServerSetting   `mapstructure:"server"`
+	MySQL    MySQLSetting    `mapstructure:"mysql"`
+	KeyCloak KeyCloakSetting `mapstructure:"keycloak"`
 }
 
 type ServerSetting struct {
@@ -11,7 +12,7 @@ type ServerSetting struct {
 	Debug  bool   `mapstructure:"debug"`
 }
 
-type MySQLSettings struct {
+type MySQLSetting struct {
 	Host            string `mapstructure:"host"`
 	Port            int    `mapstructure:"port"`
 	Username        string `mapstructure:"user"`
@@ -20,4 +21,11 @@ type MySQLSettings struct {
 	MaxIdleConns    int    `mapstructure:"maxIdleConns"`
 	MaxOpenConns    int    `mapstructure:"maxOpenConns"`
 	ConnMaxLifetime int    `mapstructure:"connMaxLifetime"`
+}
+
+type KeyCloakSetting struct {
+	Url    string `mapstructure:"url"`
+	Realm  string `mapstructure:"realm"`
+	Client string `mapstructure:"client"`
+	Secret string `mapstructure:"secret"`
 }
