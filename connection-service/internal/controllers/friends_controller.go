@@ -1,11 +1,11 @@
 package controllers
 
 import (
+	"fmt"
+	"github.com/gin-gonic/gin"
 	"hhub/connection-service/internal/dtos"
 	"hhub/connection-service/internal/pkg/response"
 	services "hhub/connection-service/internal/services/friend"
-
-	"github.com/gin-gonic/gin"
 )
 
 type FriendController struct {
@@ -27,16 +27,20 @@ func (fc *FriendController) AddFriend(c *gin.Context) {
 	var payload dtos.AddFriendRequest
 
 	if err := c.ShouldBindBodyWithJSON(&payload); err != nil {
-		response.ErrorResponse(c, response.ParamInvalid, 400)
+		response.ErrorResponse(c, response.ParamInvalid)
+		return
+	}
+	fmt.Printf("has json  %+v\n", payload)
+
+	data, code, err := fc.friendService.CreateFriendRequest(&payload)
+	if err != nil {
+		response.ErrorResponse(c, code)
 		return
 	}
 
-	if err := fc.friendService.CreateFriendRequest(&payload); err != nil {
-		response.ErrorResponse(c, response.CommonError, 400)
-		return
-	}
+	 
 
-	response.SuccessResponse(c, response.CreatedSuccess, nil)
+	response.SuccessResponse(c, code, data)
 }
 
 func (fc *FriendController) DeclineFriendRequest(c *gin.Context) {
@@ -45,12 +49,13 @@ func (fc *FriendController) DeclineFriendRequest(c *gin.Context) {
 	senderId := c.Param("senderId")
 	//TODO: auth approach that can extract sender id from jwt
 
-	if err := fc.friendService.DeclineFriendRequest(senderId, receiverId); err != nil {
-		response.ErrorResponse(c, response.CommonError, 400)
+	code, err := fc.friendService.DeclineFriendRequest(senderId, receiverId)
+	if err != nil {
+		response.ErrorResponse(c, code)
 		return
 	}
 
-	response.SuccessResponse(c, response.Accepted, nil)
+	response.SuccessResponse(c, code, nil)
 }
 
 func (fc *FriendController) AcceptFriendRequest(c *gin.Context) {
@@ -59,12 +64,13 @@ func (fc *FriendController) AcceptFriendRequest(c *gin.Context) {
 	senderId := c.Param("senderId")
 	//TODO: auth approach that can extract sender id from jwt
 
-	if err := fc.friendService.AcceptFriendRequest(senderId, receiverId); err != nil {
-		response.ErrorResponse(c, response.CommonError, 400)
+	code, err := fc.friendService.AcceptFriendRequest(senderId, receiverId)
+	if err != nil {
+		response.ErrorResponse(c, code)
 		return
 	}
 
-	response.SuccessResponse(c, response.Accepted, nil)
+	response.SuccessResponse(c, code, nil)
 }
 
 func (fc *FriendController) RemoveFriend(c *gin.Context) {
@@ -73,34 +79,35 @@ func (fc *FriendController) RemoveFriend(c *gin.Context) {
 	senderId := c.Param("senderId")
 	//TODO: auth approach that can extract sender id from jwt
 
-	if err := fc.friendService.RemoveFriend(senderId, receiverId); err != nil {
-		response.ErrorResponse(c, response.CommonError, 400)
+	code, err := fc.friendService.RemoveFriend(senderId, receiverId)
+	if err != nil {
+		response.ErrorResponse(c, code)
 		return
 	}
 
-	response.SuccessResponse(c, response.Accepted, nil)
+	response.SuccessResponse(c, code, nil)
 }
 
 func (fc *FriendController) GetFriendList(c *gin.Context) {
 	ownerId := c.Param("ownerId")
 
-	data, err := fc.friendService.GetFriendList(ownerId)
+	data, code, err := fc.friendService.GetFriendList(ownerId)
 	if err != nil {
-		response.ErrorResponse(c, response.CommonError, 400)
+		response.ErrorResponse(c, code)
 		return
 	}
 
-	response.SuccessResponse(c, response.CreatedSuccess, data)
+	response.SuccessResponse(c, code, data)
 }
 
 func (fc *FriendController) GetFriendRequestList(c *gin.Context) {
 	ownerId := c.Param("ownerId")
 
-	data, err := fc.friendService.GetFriendRequestList(ownerId)
+	data, code, err := fc.friendService.GetFriendRequestList(ownerId)
 	if err != nil {
-		response.ErrorResponse(c, response.CommonError, 400)
+		response.ErrorResponse(c, code)
 		return
 	}
 
-	response.SuccessResponse(c, response.CreatedSuccess, data)
+	response.SuccessResponse(c, code, data)
 }
