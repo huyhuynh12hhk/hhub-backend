@@ -2,8 +2,9 @@ package models
 
 import (
 	"database/sql/driver"
+	"fmt"
+	"hhub/connection-service/internal/dtos"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -25,17 +26,28 @@ func (ct connectState) Value() (driver.Value, error) {
 	return string(ct), nil
 }
 
-// TODO: Maintain data consistence
 type FriendRequest struct {
 	gorm.Model
 	// UUID uuid.UUID `gorm:"column:uuid; type:char(36);primaryKey;not null;unique;index:idx_uuid"`
-	SenderId     uuid.UUID    `gorm:"column:sender_id; type:char(36);not null;index:idx_sender_id"`
-	SenderName   string       `gorm:"column:sender_name; type:varchar(255);not null"`
-	ReceiverId   uuid.UUID    `gorm:"column:receiver_id; type:char(36);not null;index:idx_receiver_id"`
-	ReceiverName string       `gorm:"column:receiver_name; type:varchar(255);not null"`
-	State        connectState `gorm:"column:state; type:enum('WAITING','ACCEPTED','DECLINED','DISABLED');not null"`
+	SenderId   string       `gorm:"column:sender_id; type:char(36);not null;uniqueIndex:idx_friend_pair_id"`
+	Sender     UserInfo     `gorm:"foreignKey:SenderId;references:UID"`
+	ReceiverId string       `gorm:"column:receiver_id; type:char(36);not null;uniqueIndex:idx_friend_pair_id"`
+	Receiver   UserInfo     `gorm:"foreignKey:ReceiverId;references:UID"`
+	State      connectState `gorm:"column:state; type:enum('WAITING','ACCEPTED','DECLINED','DISABLED');not null"`
 }
 
 func (FriendRequest) TableName() string {
 	return "connection_friend_request"
 }
+
+func (m *FriendRequest) ToResponse() dtos.FriendRequestResponse{
+	
+	return dtos.FriendRequestResponse{
+		Id: fmt.Sprint(m.ID),
+		Sender: m.Sender.ToResponse(),
+		Receiver: m.Receiver.ToResponse(),
+		Status: string(m.State),
+		CreatedAt: m.CreatedAt.Format("2025-01-01T00:00:00-0000"),
+	}
+}
+

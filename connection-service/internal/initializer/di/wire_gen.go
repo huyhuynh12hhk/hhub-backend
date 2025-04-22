@@ -12,12 +12,14 @@ import (
 	"hhub/connection-service/internal/repositories/friend"
 	"hhub/connection-service/internal/services/follow"
 	"hhub/connection-service/internal/services/friend"
+	"hhub/connection-service/third_party/database/mysql"
 )
 
 // Injectors from follow_wire.go:
 
 func InitFollowController() (*controllers.FollowController, error) {
-	iFollowRepository := repositories_follow.NewFollowRepository()
+	db := mysql.GetInstance()
+	iFollowRepository := repositories_follow.NewFollowRepository(db)
 	iFollowService := services_follow.NewFollowService(iFollowRepository)
 	followController := controllers.NewFollowController(iFollowService)
 	return followController, nil
@@ -26,8 +28,11 @@ func InitFollowController() (*controllers.FollowController, error) {
 // Injectors from friend_wire.go:
 
 func InitFriendController() (*controllers.FriendController, error) {
-	iFriendRepository := repositories_friend.NewFriendRepository()
-	iFriendService := services_friend.NewFriendService(iFriendRepository)
+	db := mysql.GetInstance()
+	iFriendRepository := repositories_friend.NewFriendRepository(db)
+	iFollowRepository := repositories_follow.NewFollowRepository(db)
+	iFollowService := services_follow.NewFollowService(iFollowRepository)
+	iFriendService := services_friend.NewFriendService(iFriendRepository, iFollowService)
 	friendController := controllers.NewFriendController(iFriendService)
 	return friendController, nil
 }

@@ -5,10 +5,11 @@ import (
 )
 
 type IFriendRepository interface {
-	GetFriendRequestBySenderIdAndReceiverId(senderId, receiverId string) (models.FriendRequest, error)
-	GetFriendRequestByReceiverId(receiverId string) ([]models.FriendRequest, error)
-	GetFriendRequestBySenderId(senderId string) ([]models.FriendRequest, error)
-	CreateFriendRequest(friendRequest models.FriendRequest) (models.FriendRequest, error)
-	UpdateStatusFriendRequest(requestId, status string) (models.FriendRequest, error)
-	DeleteFriendRequest(requestId string) (models.FriendRequest, error)
+	GetFriendRequestBySenderIdAndReceiverId(senderId, receiverId string) *models.FriendRequest
+	GetFriendList(ownerId string) []models.FriendRequest
+	GetFriendRequestByReceiverId(receiverId string) []models.FriendRequest
+	GetFriendRequestBySenderId(senderId string) []models.FriendRequest
+	CreateFriendRequest(model *models.FriendRequest) *models.FriendRequest
+	UpdateFriendRequest(model *models.FriendRequest) *models.FriendRequest
+	DeleteFriendRequest(requestId string) bool
 }

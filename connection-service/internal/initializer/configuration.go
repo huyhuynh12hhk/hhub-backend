@@ -12,19 +12,19 @@ func AddConfiguration() {
 	// Load environment setup here
 	viper := viper.New()
 	viper.AddConfigPath("./configs/")
-	viper.SetConfigName(getConfigFile())
-	viper.SetConfigType("yaml")
+	envName := getConfigFile()
+	viper.SetConfigName(envName)
+	viper.SetConfigType("yml")
 
 	// Read the configuration file
-	if err:= viper.ReadInConfig(); err != nil {
-		panic(fmt.Errorf("Fatal error config file: %w \n", err))
+	if err := viper.ReadInConfig(); err != nil {
+		panic(fmt.Errorf("fatal error config file: %w", err))
 	}
 
 	// Map to global settings
-	if err:=viper.Unmarshal(&global.Config); err != nil {
-		panic(fmt.Errorf("Fatal error config file: %w \n", err))
+	if err := viper.Unmarshal(&global.Config); err != nil {
+		panic(fmt.Errorf("fatal error config file: %w", err))
 	}
-	
 
 }
 

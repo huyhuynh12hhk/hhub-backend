@@ -23,70 +23,76 @@ func NewFollowController(
 func (fc *FollowController) GetFollowings(c *gin.Context) {
 	ownerId := c.Param("ownerId")
 
-	data, err := fc.followService.GetFollowingUsers(ownerId)
+	data, code, err := fc.followService.GetFollowingUsers(ownerId)
 	if err != nil {
-		response.ErrorResponse(c, response.CommonError, 400)
+		response.ErrorResponse(c, code)
 		return
 	}
 
-	response.SuccessResponse(c, response.Success, data)
+	response.SuccessResponse(c, code, data)
 }
 
 func (fc *FollowController) GetFollower(c *gin.Context) {
 	ownerId := c.Param("ownerId")
 
-	data, err := fc.followService.GetFollowers(ownerId)
+	data, code, err := fc.followService.GetFollowers(ownerId)
 	if err != nil {
-		response.ErrorResponse(c, response.CommonError, 400)
+		response.ErrorResponse(c, code)
 		return
 	}
 
-	response.SuccessResponse(c, response.Success, data)
+	response.SuccessResponse(c, code, data)
 }
 
 func (fc *FollowController) CreateFollow(c *gin.Context) {
 	var payload dtos.FollowRequest
 
 	if err := c.ShouldBindBodyWithJSON(&payload); err != nil {
-		response.ErrorResponse(c, response.ParamInvalid, 400)
+		response.ErrorResponse(c, response.ParamInvalid)
 		return
 	}
 
-	if err := fc.followService.CreateFollow(&payload); err != nil {
-		response.ErrorResponse(c, response.CommonError, 400)
+	data, code, err := fc.followService.CreateFollow(&payload)
+
+	
+	if err != nil {
+		response.ErrorResponse(c, code)
 		return
 	}
 
-	response.SuccessResponse(c, response.CreatedSuccess, nil)
+	response.SuccessResponse(c, code, data)
 }
 
 func (fc *FollowController) UpdateFollowStatus(c *gin.Context) {
 
+	subscriberId := c.Param("subscriberId")
 	var payload dtos.UpdateFollowStatusRequest
 
 	if err := c.ShouldBindBodyWithJSON(&payload); err != nil {
-		response.ErrorResponse(c, response.ParamInvalid, 400)
+		response.ErrorResponse(c, response.ParamInvalid)
 		return
 	}
 
-	if err := fc.followService.UpdateFollowStatus(&payload); err != nil {
-		response.ErrorResponse(c, response.CommonError, 400)
+	code, err := fc.followService.UpdateFollowStatus(subscriberId, &payload)
+	if err != nil {
+		response.ErrorResponse(c, code)
 		return
 	}
 
-	response.SuccessResponse(c, response.Success, nil)
+	response.SuccessResponse(c, code, nil)
 }
 
 func (fc *FollowController) RemoveFollow(c *gin.Context) {
 
 	subscriberId := c.Param("ownerId")
-	targetId := c.Param("targetId")
+	producerId := c.Param("producerId")
 	//TODO: auth approach that can extract sender id from jwt
 
-	if err := fc.followService.RemoveFollow(subscriberId, targetId); err != nil {
-		response.ErrorResponse(c, response.CommonError, 400)
+	code, err := fc.followService.RemoveFollow(subscriberId, producerId)
+	if err != nil {
+		response.ErrorResponse(c, code)
 		return
 	}
 
-	response.SuccessResponse(c, response.CreatedSuccess, nil)
+	response.SuccessResponse(c, code, nil)
 }

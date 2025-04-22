@@ -1,7 +1,6 @@
 package dtos
 
-type FollowRequest struct{
+type FollowRequest struct {
 	Subscriber UserVO `json:"subscriber"`
-	Target UserVO `json:"target"`	
+	Producer   UserVO `json:"producer"`
 }
-
