@@ -2,6 +2,66 @@ version: '3.8'
 
 services:
 
+  idp-keycloak:
+    container_name: idp-keycloak
+    image: quay.io/keycloak/keycloak:26.1.4
+    command: [ "start-dev", "--import-realm" ]
+    environment:
+      DB_VENDOR: MYSQL
+      DB_ADDR: mysqldb
+      DB_PORT: 3306
+      DB_DATABASE: keycloak
+      DB_USER: root
+      DB_PASSWORD: '@123456'
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8181:8080"
+    volumes:
+      - ./dev/keycloak/realms/:/opt/keycloak/data/import/
+    depends_on:
+      - mysql-db
+    networks:
+      - hh-network
+
+  kafka:
+    image: 'bitnami/kafka:3.7.0'
+    container_name: kafka
+    hostname: kafka
+    ports:
+      - '9094:9094'
+      - '9092:9092'
+    environment:
+      ### General config
+      - KAFKA_ENABLE_KRAFT=yes
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      # Cluster ID
+      - KAFKA_KRAFT_CLUSTER_ID=27b03c99f4709c8140aa14
+      # Server-side socket listener ports
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      # Advertised listener
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      # Security protocols
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      # Inter broker listener
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      # Cluster address
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+      # Allow plaintext listener (default is false; not recommended for production)
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      # Set maximum and initial memory
+      - KAFKA_HEAP_OPTS=-Xmx512M -Xms256M
+      # Enable auto create topic
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+      # Message retention period (milliseconds)
+      - KAFKA_LOG_RETENTION_MS=604800000 # 7d
+      ### Broker config
+      - KAFKA_BROKER_ID=1 # ID unique
+      - KAFKA_CFG_NODE_ID=1
+    networks:
+      - hh-network
+
   postgres-db:
     image: postgres:latest
     container_name: hh_postgres
@@ -12,8 +72,7 @@ services:
     env_file:
       - .env
     networks:
-      hh-network:
-        ipv4_address: 132.12.0.5
+      - hh-network
 
   mysql-db:
     image: mysql:8.0
@@ -25,49 +84,35 @@ services:
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DB}
+    volumes:
+      - ./script/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - '3306:3306'
     networks:
-      hh-network:
-        ipv4_address: 132.12.0.4
+      - hh-network
 
-  gateway:
+  gatewayv1:
     build:
       context: ../api-gateway
     environment:
-      - SPRING_PROFILES_ACTIVE=${ENVIRONMENT:-development}
+      - SPRING_PROFILES_ACTIVE=${ENVIRONMENT:-production}
       - JWT_SIGNER_KEY=${JWT_SIGNER_KEY}
     env_file:
       - .env
     restart: unless-stopped
+    depends_on:
+      - idp-keycloak
     ports:
       - "8888:8888"
     networks:
-      hh-network:
-        ipv4_address: 132.12.0.8
+      - hh-network
 
-  identity-api:
-    build:
-      context: ../identity-service
-    environment:
-      - SPRING_PROFILES_ACTIVE=${ENVIRONMENT:-development}
-      - JWT_SIGNER_KEY=${JWT_SIGNER_KEY}
-    env_file:
-      - .env
-    restart: unless-stopped
-    ports:
-      - "8080:8080"
-    depends_on:
-      - mysql-db
-    networks:
-      hh-network:
-        ipv4_address: 132.12.0.9
 
-  profile-api:
+  profilev1:
     build:
       context: ../profile-service
     environment:
-      - ENVIRONMENT=${ENVIRONMENT}
+      - ENVIRONMENT=${ENVIRONMENT:-production}
       - DATABASE_URL=${PROFILE_DB_URL}
     env_file:
       - .env
@@ -77,15 +122,14 @@ services:
     depends_on:
       - postgres-db
     networks:
-      hh-network:
-        ipv4_address: 132.12.0.10
+      - hh-network
 
-  blog-api:
+  blogv1:
     build:
       context: ../blog-service
-      dockerfile: ../blog-service/blog-api/Dockerfile
+      dockerfile: ../blog-service/blogv1/Dockerfile
     environment:
-      - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT}
+      - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT:-production}
       - ASPNETCORE_URLS=http://+:5050
       - SIGNER_KEY=${JWT_SIGNER_KEY}
       - DB_CONNECT=${BLOG_DB_URL}
@@ -95,13 +139,38 @@ services:
     ports:
       - "5050:5050"
     networks:
-      hh-network:
-        ipv4_address: 132.12.0.11
+      - hh-network
 
+  connectionv1:
+    container_name: connection-service
+    build:
+      context: ../connection-service
+      dockerfile: Dockerfile
+    environment:
+      ENV: ${ENVIRONMENT:-production}
+    env_file:
+      - .env
+    ports:
+      - "8224:8224"
+    depends_on:
+      - mysql-db
+    networks:
+      - hh-network
+
+  notificationv1:
+    container_name: notification-service
+    build:
+      context: ../notification-service
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: ${ENVIRONMENT:-production}
+    env_file:
+      - .env
+    depends_on:
+      - kafka
+    networks:
+      - hh-network
 
 networks:
   hh-network:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 132.12.0.0/16

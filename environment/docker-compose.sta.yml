@@ -45,7 +45,7 @@ services:
       # Set maximum and initial memory
       - KAFKA_HEAP_OPTS=-Xmx512M -Xms256M
       # Enable auto create topic
-      - KAKFA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
       # Message retention period (milliseconds)
       - KAFKA_LOG_RETENTION_MS=604800000 # 7d
       ### Broker config
@@ -156,12 +156,12 @@ services:
     networks:
       - hh-network
 
-  gateway:
+  gatewayv1:
     container_name: gateway
     build:
       context: ../api-gateway
     environment:
-      - SPRING_PROFILES_ACTIVE=${ENVIRONMENT:-development}
+      - SPRING_PROFILES_ACTIVE=${ENVIRONMENT:-staging}
     env_file:
       - .env
     ports:
@@ -169,16 +169,19 @@ services:
     networks:
       - hh-network
 
-  profile-api:
+  profilev1:
     container_name: profile-service
     build:
       context: ../profile-service
     environment:
-      - ENVIRONMENT=${ENVIRONMENT}
+      - ENVIRONMENT=${ENVIRONMENT:-staging}
       - DATABASE_URL=${PROFILE_DB_URL}
+      - KEYCLOAK_URL=${AUTH_URL}
+      - KEYCLOAK_REALM=${AUTH_REALM}
+      - KEYCLOAK_CLIENT=${AUTH_SERVICE_CLIENT}
+      - KEYCLOAK_CLIENT_SECRET=${AUTH_SERVICE_CLIENT_SECRET}
     env_file:
       - .env
-    restart: unless-stopped
     ports:
       - "8000:8000"
     depends_on:
@@ -186,34 +189,49 @@ services:
     networks:
       - hh-network
 
-  blog-api:
+  blogv1:
     container_name: blog-service
     build:
       context: ../blog-service
       dockerfile: ../blog-service/blog-api/Dockerfile
     environment:
-      - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT}
+      - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT:-staging}
       - ASPNETCORE_URLS=http://+:5050
       - DB_CONNECT=${BLOG_DB_URL}
     env_file:
       - .env
-    restart: unless-stopped
     ports:
       - "5050:5050"
     networks:
       - hh-network
 
-  connection-api:
+  connectionv1:
     container_name: connection-service
     build: 
       context: ../connection-service
       dockerfile: Dockerfile
     environment:
-      ENV: development
+      ENV: ${ENVIRONMENT:-staging}
+    env_file:
+      - .env
     ports:
       - "8224:8224"
     depends_on:
       - mysql-db
+    networks:
+      - hh-network
+
+  notificationv1:
+    container_name: notification-service
+    build:
+      context: ../notification-service
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: ${ENVIRONMENT:-staging}
+    env_file:
+      - .env
+    depends_on:
+      - kafka
     networks:
       - hh-network
 

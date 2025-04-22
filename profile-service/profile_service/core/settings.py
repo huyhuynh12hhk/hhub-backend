@@ -9,10 +9,16 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOT_DIR = os.path.dirname(BASE_DIR)
 
 # Take environment variables from .env file
-env_file = '.env'
+env_file = f'.env.{environment}'
 
-if environment == "production":
-    env_file = '.env.prod'
+# match environment:
+#     case "production":
+#         env_file = '.env.pro'
+#     case "staging":
+#         env_file = '.env.sta'
+#     case _:
+#         env_file = '.env'
+
 
 environ.Env.read_env(os.path.join(ROOT_DIR, env_file))
 

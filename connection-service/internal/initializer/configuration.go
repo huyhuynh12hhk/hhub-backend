@@ -31,8 +31,8 @@ func AddConfiguration() {
 func getConfigFile() string {
 	env := os.Getenv("ENV")
 	switch env {
-	case "development":
-		return "development"
+	case "staging":
+		return "staging"
 	case "testing":
 		return "testing"
 	case "production":
