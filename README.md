@@ -1,8 +1,15 @@
-<h1>APIS FOR HHub SYSTEM</h1>
+<h3>APIS FOR HHub SYSTEM</h3>
 
-| Service | Main Tech Stack |
-| --- | --- |
-| API Gateway | Spring Boot 3 |
-| Identity Service | Spring Boot 3 |
-| Profile Service | Django 5 |
-| Blog Service | ASP.NET Core 8 Web API |
+<h4>Abstract </h4>
+<div align="center" >
+<img src="./docs/asserts/architect01.png" style="max-height:400px">
+</div>
+
+| Service              | Main Tech Stack        | Description                                                                              |
+| -------------------- | ---------------------- | ---------------------------------------------------------------------------------------- |
+| API Gateway          | Java, Spring Boot      | Single entry point for all request from client, routes and protects these service behind |
+| Identity Provider    | Key Cloak              | Manages user identities, handles user authentication and authorization                   |
+| Profile Service      | Python with Django     | Resource server for user profile features                                                |
+| Blog Service         | ASP.NET Core 8 Web API | Resource server for post features                                                        |
+| Connection Service   | Go with Gin            | Resource server for user connection features                                             |
+| Notification Service | Node.js Express        | Resource server for notification features                                                |
