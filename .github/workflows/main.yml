@@ -23,12 +23,17 @@ jobs:
     name: Blog Service Assurance
     uses: ./.github/workflows/blog-service.yml
 
+  connection-assurance:
+    name: Connection Service Assurance
+    uses: ./.github/workflows/connection-service.yml
+
   deploy:
     name: Deploy
     needs:
       - identity-assurance
       - profile-assurance
       - blog-assurance
+      - connection-assurance
     runs-on: ubuntu-latest
     steps:
       - name: Configure SSH
@@ -48,6 +53,29 @@ jobs:
             LogLevel ERROR
             StrictHostKeyChecking no
           END
+
+      # Separate to multiple layer for docker builder to avoid 4GB RAM server crash
+      # TODO: Optimize runtime memory?
+      - name: Down
+        run: |
+          ssh target "cd backend docker compose down && git pull"
+
+      - name: Up Infrastructure
+        run: |
+          ssh target "cd backend docker compose up -d postgres-db mysql-db kafka idp-keycloak "
+
+      - name: Build Profile And Blog Services
+        run: |
+          ssh target "cd backend docker compose build profilev1 blogv1" 
+
+      - name: Build Connection and Notification Services
+        run: |
+          ssh target "cd backend docker compose build connectionv1 notificationv1"
+
+      - name: Build Gateway
+        run: |
+          ssh target "cd backend docker compose build gatewayv1"
+
       - name: Run deploy
         run: |
-          ssh target "cd backend && docker compose down && git pull && docker compose build && docker compose up -d --force-recreate"
+          ssh target "cd backend docker compose up -d"
