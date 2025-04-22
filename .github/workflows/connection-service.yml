@@ -1,0 +1,27 @@
+name: Connection Service Assurance
+
+on:
+  workflow_call:
+  push:
+    paths:
+      - "connection-service/**"
+      - ".github/workflows/connection-service.yml"
+
+jobs:
+  quality-assurance:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@4.2.1
+        with:
+          go-version: '>=1.24.0'
+
+      - name: Test
+        working-directory: connection-service
+        run: |-
+          go test -v ./...
+        env:
+          ENV: development

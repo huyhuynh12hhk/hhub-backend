@@ -30,7 +30,8 @@ COPY --from=dependencies . .
 
 # Copy project files
 # COPY .env ./
-COPY .env.prod ./
+COPY .env.production ./
+COPY .env.staging ./
 COPY Makefile .
 COPY profile_service profile_service
 COPY scripts/entrypoint.sh /entrypoint.sh

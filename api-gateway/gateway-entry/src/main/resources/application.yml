@@ -1,0 +1,124 @@
+server:
+  port: 8888
+
+debug: true
+
+#logging:
+#  level:
+#    org.springframework.security: DEBUG
+
+app:
+  api-prefix: /api/v1
+  def:
+    identity:
+      host: http://localhost:8080
+      root: identity
+    profile:
+      host: http://localhost:8000
+      root: account
+    blog:
+      host: http://localhost:5050
+      root: blog
+
+spring:
+  application:
+    name: api-gateway
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8181/realms/hhub/protocol/openid-connect/certs
+      client:
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8181/realms/hhub
+        registration:
+          internal-service:
+            provider: keycloak
+            client-id: test-service-client
+            client-secret: AJBuZX6Phe3qOWjIqztNEln6RGYe6343
+            authorization-grant-type: authorization_code
+            scope: openid
+  cloud:
+    circuitbreaker:
+      resilience4j:
+        enabled: true
+    gateway:
+      routes:
+
+        - id: profile_service
+          uri: ${app.def.profile.host}
+          predicates:
+            - Path=${app.api-prefix}/${app.def.profile.root}/**
+          filters:
+            - StripPrefix=3
+            - name: CircuitBreaker
+              args:
+                name: profile_break
+                fallbackUri: forward:/fallback
+        - id: blog_service
+          uri: ${app.def.blog.host}
+          predicates:
+            - Path=${app.api-prefix}/${app.def.blog.root}/**
+          filters:
+            - StripPrefix=3
+            - name: CircuitBreaker
+              args:
+                name: blog_break
+                fallbackUri: forward:/fallback
+
+# Actuator Endpoints
+management:
+  health:
+    circuitbreakers:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include:
+          - '*'
+  endpoint:
+    health:
+      show-details: always
+#    prometheus:
+#      enabled: true
+
+#Resilinece4j
+resilience4j:
+#  circuit breaker
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        slidingWindowType: COUNT_BASED
+        permittedNumberOfCallsInHalfOpenState: 3
+        minimumNumberOfCalls: 5
+        waitDurationInOpenState: 300ms
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+
+# ratelimiter
+  ratelimiter:
+    instances:
+      backendA:
+        limitForPeriod: 2
+        limitRefreshPeriod: 10s
+        timeoutDuration: 0
+        registerHealthIndicator: true
+        eventConsumerBufferSize: 100
+      backendB:
+        limitForPeriod: 5
+        limitRefreshPeriod: 10s
+        timeoutDuration: 3s
+# Resilience4J Timeout Properties
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 3s
+# Resilience4J Retry Properties
+#  retry:
+#    configs:
+#      default:
+#        maxAttempts: 3
+#        waitDuration: 2s

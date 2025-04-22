@@ -1,0 +1,120 @@
+debug: false
+
+app:
+  def:
+    identity:
+      host: http://identity-service:8080
+      root: identity
+    profile:
+      host: http://profile-service:8000
+      root: account
+    blog:
+      host: http://blog-service:5050
+      root: blog
+
+spring:
+  application:
+    name: api-gateway
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://idp-keycloak:8080/realms/${AUTH_REALM}/protocol/openid-connect/certs
+      client:
+        provider:
+          keycloak:
+            issuer-uri: http://idp-keycloak:8080/realms/${AUTH_REALM}
+        registration:
+          internal-service:
+            provider: keycloak
+            client-id: ${AUTH_SERVICE_CLIENT}
+            client-secret: ${AUTH_SERVICE_CLIENT_SECRET}
+            authorization-grant-type: authorization_code
+            scope: openid
+  cloud:
+    circuitbreaker:
+      resilience4j:
+        enabled: true
+    gateway:
+      routes:
+        - id: identity_service
+          uri: ${app.def.identity.host}
+          predicates:
+            - Path=${app.api-prefix}/${app.def.identity.root}/**
+          filters:
+            - StripPrefix=3
+            - name: CircuitBreaker
+              args:
+                name: commonCircuitBreaker
+                fallbackUri: forward:/fallback
+        - id: profile_service
+          uri: ${app.def.profile.host}
+          predicates:
+            - Path=${app.api-prefix}/${app.def.profile.root}/**
+          filters:
+            - StripPrefix=3
+            - name: CircuitBreaker
+              args:
+                name: commonCircuitBreaker
+                fallbackUri: forward:/fallback
+        - id: blog_service
+          uri: ${app.def.blog.host}
+          predicates:
+            - Path=${app.api-prefix}/${app.def.blog.root}/**
+          filters:
+            - StripPrefix=3
+            - name: CircuitBreaker
+              args:
+                name: commonCircuitBreaker
+                fallbackUri: forward:/fallback
+
+# Actuator Endpoints
+management:
+  health:
+    circuitbreakers:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+#Resilinece4j
+resilience4j:
+  #  circuit breaker
+  circuitbreaker:
+    instances:
+      gateway:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        permittedNumberOfCallsInHalfOpenState: 3
+        minimumNumberOfCalls: 5
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+  # ratelimiter
+  ratelimiter:
+    instances:
+      backendA:
+        limitForPeriod: 2
+        limitRefreshPeriod: 10s
+        timeoutDuration: 0
+        registerHealthIndicator: true
+        eventConsumerBufferSize: 100
+      backendB:
+        limitForPeriod: 5
+        limitRefreshPeriod: 10s
+        timeoutDuration: 3s
+  # Resilience4J Timeout Properties
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 3s
+  # Resilience4J Retry Properties
+  retry:
+    configs:
+      default:
+        maxAttempts: 3
+        waitDuration: 2s

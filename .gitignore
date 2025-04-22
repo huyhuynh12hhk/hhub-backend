@@ -1,5 +1,6 @@
 .idea
 .vscode
 .vs
-.env
+environment/.env**
+environment/dev
 .private
