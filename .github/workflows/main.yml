@@ -30,7 +30,7 @@ jobs:
   deploy:
     name: Deploy
     needs:
-      - identity-assurance
+      - gateway-assurance
       - profile-assurance
       - blog-assurance
       - connection-assurance
