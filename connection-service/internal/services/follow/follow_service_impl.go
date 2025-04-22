@@ -18,9 +18,9 @@ func (s *_FollowService) CreateFollow(request *dtos.FollowRequest) (data *dtos.F
 	var record = mappers.FollowRequestRequestToModel(request)
 	result := s.followRepository.CreateFollow(&record)
 
-	fmt.Printf("Create follow service: %+v\n", result)
+	// fmt.Printf("Create follow service: %+v\n", result)
 
-	item := record.ToResponse()
+	item := result.ToResponse()
 
 	return &item, response.CreatedSuccess, nil
 }
@@ -67,10 +67,10 @@ func (s *_FollowService) UpdateFollowStatus(subscriberId string, request *dtos.U
 
 // GetFollowers implements IFollowService.
 func (s *_FollowService) GetFollowers(ownerId string) (data []dtos.FollowResponse, code int, err error) {
-	fmt.Println("Owner info: ", ownerId)
+	// fmt.Println("Owner info: ", ownerId)
 	results := s.followRepository.GetFollowsByProducerId(ownerId)
 
-	fmt.Printf("Service:: Repo Result %+v\n", results)
+	// fmt.Printf("Service:: Repo Result %+v\n", results)
 
 	items := mappers.FollowsToResponses(results)
 	if items == nil{
@@ -82,10 +82,10 @@ func (s *_FollowService) GetFollowers(ownerId string) (data []dtos.FollowRespons
 
 // GetFollowingUsers implements IFollowService.
 func (s *_FollowService) GetFollowingUsers(ownerId string) (data []dtos.FollowResponse, code int, err error) {
-	fmt.Println("Owner info: ", ownerId)
+	// fmt.Println("Owner info: ", ownerId)
 	results := s.followRepository.GetFollowsBySubscriberId(ownerId)
 
-	fmt.Printf("Service:: Repo Result %+v\n", results)
+	// fmt.Printf("Service:: Repo Result %+v\n", results)
 
 	items := mappers.FollowsToResponses(results)
 	if items == nil{

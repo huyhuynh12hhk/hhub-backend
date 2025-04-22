@@ -53,12 +53,14 @@ func (fc *FollowController) CreateFollow(c *gin.Context) {
 	}
 
 	data, code, err := fc.followService.CreateFollow(&payload)
+
+	
 	if err != nil {
 		response.ErrorResponse(c, code)
 		return
 	}
 
-	response.SuccessResponse(c, response.CreatedSuccess, data)
+	response.SuccessResponse(c, code, data)
 }
 
 func (fc *FollowController) UpdateFollowStatus(c *gin.Context) {
@@ -92,5 +94,5 @@ func (fc *FollowController) RemoveFollow(c *gin.Context) {
 		return
 	}
 
-	response.SuccessResponse(c, response.CreatedSuccess, nil)
+	response.SuccessResponse(c, code, nil)
 }

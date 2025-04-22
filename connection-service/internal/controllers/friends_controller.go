@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"hhub/connection-service/internal/dtos"
 	"hhub/connection-service/internal/pkg/response"
@@ -30,7 +29,7 @@ func (fc *FriendController) AddFriend(c *gin.Context) {
 		response.ErrorResponse(c, response.ParamInvalid)
 		return
 	}
-	fmt.Printf("has json  %+v\n", payload)
+	// fmt.Printf("has json  %+v\n", payload)
 
 	data, code, err := fc.friendService.CreateFriendRequest(&payload)
 	if err != nil {

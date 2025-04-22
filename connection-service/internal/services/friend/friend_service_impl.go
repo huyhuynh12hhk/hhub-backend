@@ -32,7 +32,7 @@ func (s *_FriendService) CreateFriendRequest(request *dtos.AddFriendRequest) (da
 
 	result := s.friendRepository.CreateFriendRequest(&record)
 
-	fmt.Printf("Create friend request service: %+v\n", result)
+	// fmt.Printf("Create friend request service: %+v\n", result)
 	
 	// After make friend request, auto follow this user
 	follow := dtos.FollowRequest{
@@ -43,7 +43,7 @@ func (s *_FriendService) CreateFriendRequest(request *dtos.AddFriendRequest) (da
 		return nil, codeF, fmt.Errorf("error when create follow")
 	}
 	
-	item := record.ToResponse()
+	item := result.ToResponse()
 	return &item, response.CreatedSuccess, nil
 }
 
@@ -104,10 +104,10 @@ func (s *_FriendService) RemoveFriend(senderId string, receiverId string) (code 
 
 // GetFriendList implements IFriendService.
 func (s *_FriendService) GetFriendList(ownerId string) (data []dtos.FriendRequestResponse, code int, err error) {
-	fmt.Println("Owner info: ", ownerId)
+	// fmt.Println("Owner info: ", ownerId)
 	results := s.friendRepository.GetFriendList(ownerId)
 
-	fmt.Printf("Service:: Repo Result %+v\n", results)
+	// fmt.Printf("Service:: Repo Result %+v\n", results)
 
 	items := mappers.FriendRequestsToResponses(results)
 	if items == nil{
@@ -119,10 +119,10 @@ func (s *_FriendService) GetFriendList(ownerId string) (data []dtos.FriendReques
 
 // GetFriendRequestList implements IFriendService.
 func (s *_FriendService) GetFriendRequestList(ownerId string) ([]dtos.FriendRequestResponse, int, error) {
-	fmt.Println("Owner info: ", ownerId)
+	// fmt.Println("Owner info: ", ownerId)
 	results := s.friendRepository.GetFriendRequestByReceiverId(ownerId)
 
-	fmt.Printf("Service:: Repo Result %+v\n", results)
+	// fmt.Printf("Service:: Repo Result %+v\n", results)
 
 	items := mappers.FriendRequestsToResponses(results)
 	if items == nil{

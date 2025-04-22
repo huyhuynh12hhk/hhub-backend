@@ -3,36 +3,35 @@ package repositories_friend
 import (
 	"errors"
 	"fmt"
-	"hhub/connection-service/global"
 	"hhub/connection-service/internal/models"
 
 	"gorm.io/gorm"
 )
 
-type _FriendRepository struct{
-	// TODO: consider inject db here alter for global using
+type _FriendRepository struct {
+	db *gorm.DB
 }
 
 // CreateFriendRequest implements IFriendRepository.
 func (f *_FriendRepository) CreateFriendRequest(model *models.FriendRequest) *models.FriendRequest {
-	var MDb = *global.MySQL
 
-	fmt.Printf("\n\nRepo: Create Friend request: %+v\n", model)
+
+	// fmt.Printf("\n\nRepo: Create Friend request: %+v\n", model)
 	sender := model.Sender
 	receiver := model.Receiver
-	MDb.FirstOrCreate(&sender, models.UserInfo{UID: sender.UID})
-	fmt.Printf("\n\nRepo: Create User Info: %+v\n", sender)
+	f.db.FirstOrCreate(&sender, models.UserInfo{UID: sender.UID})
+	// fmt.Printf("\n\nRepo: Create User Info: %+v\n", sender)
 
-	MDb.FirstOrCreate(&receiver, models.UserInfo{UID: receiver.UID})
-	fmt.Printf("\n\nRepo: Create User Info: %+v\n", receiver)
+	f.db.FirstOrCreate(&receiver, models.UserInfo{UID: receiver.UID})
+	// fmt.Printf("\n\nRepo: Create User Info: %+v\n", receiver)
 
-	result := MDb.Create(&model)
+	result := f.db.Create(&model)
 
 	if on, _ := onError(result, nil, "Issue when create friend request"); on {
 		return nil
 	}
 
-	fmt.Printf("Repo: Create Friend result: %+v\n", model.ID)
+	// fmt.Printf("Repo: Create Friend result: %+v\n", model.ID)
 
 	return model
 }
@@ -40,7 +39,7 @@ func (f *_FriendRepository) CreateFriendRequest(model *models.FriendRequest) *mo
 // UpdateStatusFriendRequest implements IFriendRepository.
 func (f *_FriendRepository) UpdateFriendRequest(model *models.FriendRequest) *models.FriendRequest {
 
-	result := global.MySQL.Model(&model).Updates(models.FriendRequest{
+	result := f.db.Model(&model).Updates(models.FriendRequest{
 		State: model.State,
 	})
 
@@ -48,14 +47,14 @@ func (f *_FriendRepository) UpdateFriendRequest(model *models.FriendRequest) *mo
 		return nil
 	}
 
-	// global.MySQL.Save(&model)
+	// f.db.Save(&model)
 	return model
 
 }
 
 // DeleteFriendRequest implements IFriendRepository.
 func (f *_FriendRepository) DeleteFriendRequest(requestId string) bool {
-	result := global.MySQL.Delete(&models.FriendRequest{}, requestId)
+	result := f.db.Delete(&models.FriendRequest{}, requestId)
 
 	if on, _ := onError(result, nil, "Issue when delete friend request"); on {
 		return false
@@ -66,7 +65,7 @@ func (f *_FriendRepository) DeleteFriendRequest(requestId string) bool {
 // GetFriendList implements IFriendRepository.
 func (f *_FriendRepository) GetFriendList(ownerId string) []models.FriendRequest {
 	var friends []models.FriendRequest
-	global.MySQL.
+	f.db.
 		// Where("receiver_id = ?", ownerId).
 		// Or("sender_id = ?", ownerId).
 		Where(models.FriendRequest{ReceiverId: ownerId, State: models.ACCEPTED}).
@@ -75,7 +74,7 @@ func (f *_FriendRepository) GetFriendList(ownerId string) []models.FriendRequest
 		Preload("Receiver").
 		Find(&friends)
 
-	fmt.Printf("\n\nRepo: Friend request: %+v\n", friends)
+	// fmt.Printf("\n\nRepo: Friend request: %+v\n", friends)
 
 	return friends
 }
@@ -83,13 +82,13 @@ func (f *_FriendRepository) GetFriendList(ownerId string) []models.FriendRequest
 // GetFriendRequestByReceiverId implements IFriendRepository.
 func (f *_FriendRepository) GetFriendRequestByReceiverId(receiverId string) []models.FriendRequest {
 	var friends []models.FriendRequest
-	global.MySQL.
+	f.db.
 		Where(models.FriendRequest{ReceiverId: receiverId, State: models.WAITING}).
 		Preload("Sender").
 		Preload("Receiver").
 		Find(&friends)
 
-	fmt.Printf("\n\nRepo: Friend requests: %+v\n", friends)
+	// fmt.Printf("\n\nRepo: Friend requests: %+v\n", friends)
 
 	return friends
 }
@@ -97,14 +96,14 @@ func (f *_FriendRepository) GetFriendRequestByReceiverId(receiverId string) []mo
 // GetFriendRequestBySenderId implements IFriendRepository.
 func (f *_FriendRepository) GetFriendRequestBySenderId(senderId string) []models.FriendRequest {
 	var friends []models.FriendRequest
-	global.MySQL.
+	f.db.
 		Where(models.FriendRequest{SenderId: senderId}).
 		// Where("sender_id = ?", senderId).
 		Preload("Sender").
 		Preload("Receiver").
 		Find(&friends)
 
-	fmt.Printf("\n\nRepo: Friend requests: %+v\n", friends)
+	// fmt.Printf("\n\nRepo: Friend requests: %+v\n", friends)
 
 	return friends
 }
@@ -112,7 +111,7 @@ func (f *_FriendRepository) GetFriendRequestBySenderId(senderId string) []models
 // GetFriendRequestBySenderIdAndReceiverId implements IFriendRepository.
 func (f *_FriendRepository) GetFriendRequestBySenderIdAndReceiverId(senderId string, receiverId string) *models.FriendRequest {
 	var friend models.FriendRequest
-	result := global.MySQL.
+	result := f.db.
 		Model(&models.FriendRequest{SenderId: senderId, ReceiverId: receiverId}).
 		First(&friend)
 
@@ -120,7 +119,7 @@ func (f *_FriendRepository) GetFriendRequestBySenderIdAndReceiverId(senderId str
 		return nil
 	}
 
-	fmt.Printf("\n\nRepo: Friend request details: %+v\n", friend)
+	// fmt.Printf("\n\nRepo: Friend request details: %+v\n", friend)
 	return &friend
 }
 
@@ -137,6 +136,8 @@ func onError(result *gorm.DB, typeErr error, msg string) (bool, error) {
 	return false, nil
 }
 
-func NewFriendRepository() IFriendRepository {
-	return &_FriendRepository{}
+func NewFriendRepository(db *gorm.DB) IFriendRepository {
+	return &_FriendRepository{
+		db: db,
+	}
 }

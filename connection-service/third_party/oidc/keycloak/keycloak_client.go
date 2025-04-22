@@ -12,10 +12,10 @@ func KeycloakVerifier() *oidc.IDTokenVerifier {
 
 	ctx := context.Background()
 
-	path := fmt.Sprintf("%s/realms/%s", global.Config.KeyCloak.Url, global.Config.KeyCloak.Realm)
+	issuer := fmt.Sprintf("%s/realms/%s", global.Config.KeyCloak.Url, global.Config.KeyCloak.Realm)
 
 	// panic(fmt.Sprintf("auth url: %+v",path))
-	provider, err := oidc.NewProvider(ctx, path)
+	provider, err := oidc.NewProvider(ctx, issuer)
 	if err != nil {
 		panic(fmt.Sprintf("Error occur when init oidc %+v", err))
 	}
