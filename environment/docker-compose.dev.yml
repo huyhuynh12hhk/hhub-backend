@@ -203,6 +203,20 @@ services:
     networks:
       - hh-network
 
+  connection-api:
+    container_name: connection-service
+    build: 
+      context: ../connection-service
+      dockerfile: Dockerfile
+    environment:
+      ENV: development
+    ports:
+      - "8224:8224"
+    depends_on:
+      - mysql-db
+    networks:
+      - hh-network
+
 
 networks:
   hh-network:

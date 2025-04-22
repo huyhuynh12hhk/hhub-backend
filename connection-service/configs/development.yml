@@ -1,0 +1,19 @@
+server:
+  debug: false
+  port: 8224
+  # prefix: "/api/v1"
+  prefix:
+mysql:
+  host: mysqldb
+  port: 3306
+  user: root
+  password: "@123456"
+  database: test_connection_service
+  maxIdleConns: 10
+  maxOpenConns: 100
+  connMaxLifetime: 3600
+keycloak:
+  url: http://idp-keycloak:8080
+  realm: test-realm-v0.1
+  client: test-internal-client
+  secret: "**********"
