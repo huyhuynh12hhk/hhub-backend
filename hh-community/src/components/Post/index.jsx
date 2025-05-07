@@ -3,15 +3,13 @@ import React from "react";
 import Grid from "@mui/material/Grid2";
 import CommentSection from "./CommentSection";
 import ReactionSection from "./ReactionSection";
-import CommentField from "./CommentSection/CommentField";
+import CommentField from "./CommentSection/ComentField";
 import parse from "html-react-parser";
 
 const Post = (props, ref) => {
-  const { id, coverImage, authorName, createdAt, content, reactions } =
-    props.post;
+  const { id, coverImage, authorName, createdAt, content, reactions } = props.post;
   return (
     <Card
-      id={id}
       ref={ref}
       sx={{
         width: "100%",
@@ -60,17 +58,16 @@ const Post = (props, ref) => {
             </Typography>
           </Grid>
         </Grid>
-        <Box
-          minHeight="50px"
+        <Box minHeight="50px"
           sx={{
-            fontSize: 14,
-            paddingInline: 2,
-            lineHeight: 1.2,
+            fontSize:14,
+            paddingInline:2,
+            lineHeight:1.2,
           }}
         >
           <div>{parse(content)}</div>
         </Box>
-        <ReactionSection postId={id} hasLiked={false} items={reactions} />
+        <ReactionSection postId={id} hasLiked={false} items={reactions}/>
         <CommentSection postId={id} />
       </Grid>
     </Card>

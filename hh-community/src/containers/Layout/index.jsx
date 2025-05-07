@@ -17,22 +17,22 @@ const MainLayout = ({ className }) => {
       </S.Header>
       <S.Container className={className}>
         <LeftNav />
-        <Main  />
+        <Main />
       </S.Container>
       <Toaster
         toastOptions={{
           success: {
-            style: {
+            style:{
               backgroundColor: "#008000",
-              color: "white",
-            },
+              color: "white"
+            }
           },
-          error: {
-            style: {
+          error:{
+            style:{
               backgroundColor: "#ff4545",
-              color: "white",
-            },
-          },
+              color: "white"
+            }
+          }
         }}
       />
     </RequireAuthorizeNotificationProvider>

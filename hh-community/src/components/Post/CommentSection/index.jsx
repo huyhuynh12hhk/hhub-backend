@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Comment from "../../Comment";
 import { comments_data } from "./data";
 import { Button, Typography } from "@mui/material";
-import CommentField from "./CommentField";
+import CommentField from "./ComentField";
 import { getComments } from "../../../services/commentService";
 import useIsAuthenticated from "../../../utils/hooks/useIsAuthenticated";
 
@@ -20,7 +20,7 @@ const CommentSection = ({ postId }) => {
   };
 
   useEffect(() => {
-    // fetchComments();
+    fetchComments();
   }, []);
 
   const showMore = () => {

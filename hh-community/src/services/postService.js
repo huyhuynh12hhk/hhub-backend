@@ -5,9 +5,8 @@ import httpClient from "../utils/httpClient";
 
 const baseUrl = `${process.env.REACT_APP_BASE_URL}/blog/posts`;
 
-export const fetchPosts = async (page = 1, size = 5) => {
-  const response = await httpClient.get(
-    `${baseUrl}?page=${page}&size=${size}`
+export const fetchPosts = async () => {
+  const response = await httpClient.get(`${baseUrl}`
     // , authorizationHeaders()
   );
 

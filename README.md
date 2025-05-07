@@ -61,6 +61,11 @@ Is written in **Go** using the **Gin** framework. It manages user relationships�
 Move ahead, I’ll integrate **Redis** to maintain high-availability connection state and introduce real-time friend-request notifications via **Kafka**, which will feed into Notification Service.
 
 
+**HH Community UI**
+
+The UI is developed in **ReactJS**, incorporating key libraries: **MUI** for component styling, **Styled Components** for custom theming, **Axios** for HTTP requests, **Redux** for state management, and **React Router DOM** for client-side navigation. Perhaps I can cover fullstack, but I recognize that the UI side isn’t my absolute strongest suit. This project still have more improvement in the coming updates.
+
+
 
 
 
