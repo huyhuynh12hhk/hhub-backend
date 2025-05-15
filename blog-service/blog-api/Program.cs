@@ -1,6 +1,7 @@
 using blog_api.Configuration;
-using blog_api.Entities;
+using blog_api.Models.Entities;
 using blog_api.Services;
+using blog_api.Services.Interface;
 
 using MongoDB.Driver;
 
@@ -12,11 +13,17 @@ var env = builder.Environment.EnvironmentName;
 
 string connectionString = env.ToLower().Equals("production") ? config["DB_CONNECT"]! : mongoConfig.ConnectionString!;
 
+
 builder.Services.AddControllers()
     //.AddNewtonsoftJson()
     ;
 
+
 ConfigExtensions.SetupNewtonsoftJson();
+
+builder.Services.AddAppHttpClient(config);
+builder.Services.AddRedis(config);
+builder.Services.AddKafkaConfig(config);
 
 builder.Services.AddServiceSwagger(config);
 builder.Services.AddJWTAuthorization(config);
@@ -34,8 +41,10 @@ builder.Services.AddSingleton(_ =>
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddRepository<Post>(mongoConfig.PostsCollectionName);
 builder.Services.AddRepository<Comment>(mongoConfig.CommentsCollectionName);
+builder.Services.AddRepository<UserFeedEntry>(mongoConfig.FeedsCollectionName);
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddScoped<IFeedService, FeedService>();
 
 var app = builder.Build();
 

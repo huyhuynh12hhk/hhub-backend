@@ -1,4 +1,4 @@
-﻿using blog_api.Entities;
+﻿using blog_api.Models.Entities;
 
 namespace blog_api.DTOs.Response
 {

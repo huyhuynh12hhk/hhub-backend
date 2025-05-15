@@ -1,8 +1,13 @@
 ﻿using System.Linq.Expressions;
+using System.Text;
 
-using blog_api.Entities;
+using blog_api.Models.Entities;
+using blog_api.Pagination;
 
 using MongoDB.Driver;
+using MongoDB.Driver.Linq;
+
+using Newtonsoft.Json;
 
 namespace blog_api.Repositories
 {
@@ -14,13 +19,112 @@ namespace blog_api.Repositories
         {
             dbCollection = database.GetCollection<T>(collectionName);
         }
-        public async Task<List<T>> GetAllAsync()
+        public async Task<OffSetPaginatedList<T>> GetAllAsync(int page = 1, int pageSize = 10)
         {
-            return await dbCollection.Find(filterBuilder.Empty).ToListAsync();
+            var totalCount = (int)await dbCollection
+                            .CountDocumentsAsync(filterBuilder.Empty);
+
+            var items = await dbCollection
+                .Find(filterBuilder.Empty)
+                .Skip((page - 1) * pageSize)
+                .Limit(pageSize)
+                .ToListAsync();
+
+            return new OffSetPaginatedList<T>(
+                items,
+                totalCount,
+                page,
+                pageSize
+            );
         }
-        public async Task<List<T>> GetAllAsync(Expression<Func<T, bool>> filters)
+        public async Task<OffSetPaginatedList<T>> GetAllAsync(Expression<Func<T, bool>> filters, int page = 1, int pageSize = 10)
         {
-            return await dbCollection.Find(filters).ToListAsync();
+            var totalCount = (int)await dbCollection
+                            .CountDocumentsAsync(filters);
+
+            var items = await dbCollection
+                .Find(filters)
+                .Skip((page - 1) * pageSize)
+                .Limit(pageSize)
+                .ToListAsync();
+
+            return new OffSetPaginatedList<T>(
+                items,
+                totalCount,
+                page,
+                pageSize
+            );
+
+        }
+
+        public async Task<CursorPaginatedList<T>> GetAllAsync(
+            Expression<Func<T, bool>> filters,
+            string cursor,
+            int limit = 10
+        )
+        {
+            PageCursor? curObj = null;
+            if (!string.IsNullOrEmpty(cursor))
+            {
+                var json = Encoding.UTF8.GetString(Convert.FromBase64String(cursor));
+                curObj = JsonConvert.DeserializeObject<PageCursor>(json);
+            }
+
+            var baseFilter = filterBuilder.Where(filters);
+            FilterDefinition<T> pagingFilter;
+            if (curObj == null)
+            {
+                pagingFilter = filterBuilder.Empty;
+            }
+            else
+            {
+                var ltCreated = filterBuilder.Lt(x => x.CreatedAt, curObj.CreatedAt);
+                var eqCreated = filterBuilder.Eq(x => x.CreatedAt, curObj.CreatedAt);
+                var ltId = filterBuilder.Lt(x => x.Id, curObj.Id);
+
+                pagingFilter = filterBuilder.Or(
+                    ltCreated,
+                    filterBuilder.And(eqCreated, ltId)
+                );
+            }
+
+            var combinedFilter = filterBuilder.And(baseFilter, pagingFilter);
+
+            // Check has more
+            var page = await dbCollection
+                .Find(combinedFilter)
+                .SortByDescending(x => x.CreatedAt)
+                .ThenByDescending(x => x.Id)
+                .Limit(limit + 1)
+                .ToListAsync();
+
+            // Next Cursor
+            bool hasMore = page.Count > limit;
+            if (hasMore) page.RemoveAt(page.Count - 1);
+
+            string? nextCursor = null;
+            if (hasMore)
+            {
+                var last = page.Last();
+                var newCurObj = new PageCursor
+                {
+                    Id = last.Id,
+                    CreatedAt = last.CreatedAt
+                };
+                var jsonOut = JsonConvert.SerializeObject(newCurObj);
+                nextCursor = Convert.ToBase64String(
+                    Encoding.UTF8.GetBytes(jsonOut)
+                );
+            }
+
+            // 7. Return paginated list
+            return new CursorPaginatedList<T>(
+                page,          // items
+                nextCursor,    // new cursor or null
+                limit,
+                hasMore
+            );
+
         }
         public async Task<T> GetAsync(string id)
         {
@@ -86,6 +190,11 @@ namespace blog_api.Repositories
         public async Task RemoveManyAsync(Expression<Func<T, bool>> filters)
         {
             await dbCollection.DeleteManyAsync(filters);
+        }
+
+        public async Task<int> CountAsync(Expression<Func<T, bool>> filters)
+        {
+            return (int)await dbCollection.CountDocumentsAsync<T>(filters);
         }
     }
 }

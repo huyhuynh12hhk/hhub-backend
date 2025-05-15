@@ -1,7 +1,7 @@
 ﻿using blog_api.DTOs.Request;
-using blog_api.Entities;
+using blog_api.Models.Entities;
 
-namespace blog_api.Services
+namespace blog_api.Services.Interface
 {
     public interface ICommentService
     {
@@ -9,6 +9,6 @@ namespace blog_api.Services
         Task<Comment> UpdateComment(string id, UpdateCommentRequest request);
         Task DeleteComment(string id);
         Task<Comment> GetCommentById(string id);
-        Task<List<Comment>> GetComments(string postId);
+        Task<List<Comment>> GetComments(string postId, int page = 1, int pageSize = 10);
     }
 }
