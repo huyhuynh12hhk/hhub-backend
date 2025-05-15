@@ -6,5 +6,6 @@
         public string DatabaseName { get; set; } = null!;
         public string PostsCollectionName { get; set; } = null!;
         public string CommentsCollectionName { get; set; } = null!;
+        public string FeedsCollectionName { get; set; } = null!;
     }
 }

@@ -1,7 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace blog_api.Entities
+namespace blog_api.Models.Entities
 {
     public class Comment : BaseEntity
     {

@@ -5,7 +5,7 @@ using AutoMapper;
 using blog_api.DTOs;
 using blog_api.DTOs.Request;
 using blog_api.DTOs.Response;
-using blog_api.Services;
+using blog_api.Services.Interface;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

@@ -2,8 +2,12 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-using blog_api.Entities;
+using blog_api.Consumers;
+using blog_api.Models.Entities;
 using blog_api.Repositories;
+using blog_api.Repositories.Http;
+
+using Confluent.Kafka;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
@@ -61,6 +65,57 @@ namespace blog_api.Configuration
             };
         }
 
+        public static IServiceCollection AddRedis(this IServiceCollection services, IConfiguration configuration)
+        {
+            var redisSection = configuration.GetSection("Redis");
+            var redisConfig = redisSection.Get<RedisSettings>() ?? throw new Exception("Cannot read redis configuration");
+            services.Configure<RedisSettings>(redisSection);
+
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = redisConfig.ConnectionString;
+                options.ConfigurationOptions = new StackExchange.Redis.ConfigurationOptions()
+                {
+                    AbortOnConnectFail = true,
+                    EndPoints = { options.Configuration }
+                };
+            });
+
+            return services;
+        }
+
+        public static IServiceCollection AddKafkaConfig(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddSingleton<IProducer<Null, string>>(sp =>
+            {
+                var cfg = new ProducerConfig { BootstrapServers = configuration["Kafka:BootstrapServers"] };
+                return new ProducerBuilder<Null, string>(cfg).Build();
+            });
+
+            // Kafka consumer
+            var consumerConfig = new ConsumerConfig
+            {
+                BootstrapServers = configuration["Kafka:BootstrapServers"],
+                GroupId = configuration["Kafka:GroupId"],
+                AutoOffsetReset = AutoOffsetReset.Earliest,
+                EnableAutoCommit = false,
+                AllowAutoCreateTopics = true,
+            };
+            services.AddSingleton(consumerConfig);
+
+            services.AddHostedService<PostSavedConsumer>();
+
+            return services;
+        }
+
+        public static IServiceCollection AddAppHttpClient(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddHttpClient<IUserRepository, UserHttpRepository>();
+            services.AddHttpClient<IFollowRepository, FollowHttpRepository>();
+
+            return services;
+        }
+
         public static IServiceCollection AddServiceSwagger(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddEndpointsApiExplorer();
@@ -69,7 +124,7 @@ namespace blog_api.Configuration
                 c.CustomSchemaIds(type => type.ToString());
                 var securityScheme = new OpenApiSecurityScheme
                 {
-                    Name = "KEYCLOAK",
+                    Name = "Internal",
                     Type = SecuritySchemeType.OAuth2,
                     In = ParameterLocation.Header,
                     BearerFormat = "JWT",
