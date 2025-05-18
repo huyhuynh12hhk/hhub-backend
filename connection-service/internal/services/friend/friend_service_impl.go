@@ -21,34 +21,33 @@ func NewFriendService(
 ) IFriendService {
 	return &_FriendService{
 		friendRepository: friendRepository,
-		followService: followService,
+		followService:    followService,
 	}
 }
 
 // CreateFriendRequest implements IFriendService.
-func (s *_FriendService) CreateFriendRequest(request *dtos.AddFriendRequest) (data *dtos.FriendRequestResponse, code int, err error) {
+func (s *_FriendService) CreateFriendRequest(request *dtos.AddFriendRequest) (*dtos.FriendRequestResponse, int, error) {
 	var record = mappers.AddFriendRequestToModel(request)
-
 
 	result := s.friendRepository.CreateFriendRequest(&record)
 
 	// fmt.Printf("Create friend request service: %+v\n", result)
-	
+
 	// After make friend request, auto follow this user
 	follow := dtos.FollowRequest{
-		Subscriber: request.Sender,
-		Producer:   request.Receiver,
+		SubscriberId: request.SenderId,
+		ProducerId:   request.ReceiverId,
 	}
 	if _, codeF, errF := s.followService.CreateFollow(&follow); errF != nil {
 		return nil, codeF, fmt.Errorf("error when create follow")
 	}
-	
+
 	item := result.ToResponse()
 	return &item, response.CreatedSuccess, nil
 }
 
 // AcceptFriendRequest implements IFriendService.
-func (s *_FriendService) AcceptFriendRequest(senderId string, receiverId string) (code int, err error) {
+func (s *_FriendService) AcceptFriendRequest(senderId string, receiverId string) (int, error) {
 	// Find the request
 	record := s.friendRepository.GetFriendRequestBySenderIdAndReceiverId(senderId, receiverId)
 
@@ -62,11 +61,20 @@ func (s *_FriendService) AcceptFriendRequest(senderId string, receiverId string)
 
 	s.friendRepository.UpdateFriendRequest(record)
 
+	follow := dtos.FollowRequest{
+		SubscriberId: receiverId,
+		ProducerId:   senderId,
+	}
+
+	if _, codeF, errF := s.followService.CreateFollow(&follow); errF != nil {
+		return codeF, fmt.Errorf("error when create follow")
+	}
+
 	return response.Accepted, nil
 }
 
 // DeclineFriendRequest implements IFriendService.
-func (s *_FriendService) DeclineFriendRequest(senderId string, receiverId string) (code int, err error) {
+func (s *_FriendService) DeclineFriendRequest(senderId string, receiverId string) (int, error) {
 	// Find the request
 	record := s.friendRepository.GetFriendRequestBySenderIdAndReceiverId(senderId, receiverId)
 
@@ -84,7 +92,7 @@ func (s *_FriendService) DeclineFriendRequest(senderId string, receiverId string
 }
 
 // RemoveFriend implements IFriendService.
-func (s *_FriendService) RemoveFriend(senderId string, receiverId string) (code int, err error) {
+func (s *_FriendService) RemoveFriend(senderId string, receiverId string) (int, error) {
 	// Find the request
 	record := s.friendRepository.GetFriendRequestBySenderIdAndReceiverId(senderId, receiverId)
 
@@ -103,14 +111,14 @@ func (s *_FriendService) RemoveFriend(senderId string, receiverId string) (code 
 }
 
 // GetFriendList implements IFriendService.
-func (s *_FriendService) GetFriendList(ownerId string) (data []dtos.FriendRequestResponse, code int, err error) {
+func (s *_FriendService) GetFriendList(ownerId string) ([]dtos.FriendRequestResponse, int, error) {
 	// fmt.Println("Owner info: ", ownerId)
 	results := s.friendRepository.GetFriendList(ownerId)
 
 	// fmt.Printf("Service:: Repo Result %+v\n", results)
 
 	items := mappers.FriendRequestsToResponses(results)
-	if items == nil{
+	if items == nil {
 		items = []dtos.FriendRequestResponse{}
 	}
 
@@ -125,11 +133,9 @@ func (s *_FriendService) GetFriendRequestList(ownerId string) ([]dtos.FriendRequ
 	// fmt.Printf("Service:: Repo Result %+v\n", results)
 
 	items := mappers.FriendRequestsToResponses(results)
-	if items == nil{
+	if items == nil {
 		items = []dtos.FriendRequestResponse{}
 	}
 
 	return items, response.Success, nil
 }
-
-

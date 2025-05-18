@@ -58,7 +58,7 @@ func migrateTables(db *gorm.DB) {
 	err := db.AutoMigrate(
 		&models.FriendRequest{},
 		&models.Follow{},
-		&models.UserInfo{},
+		// &models.UserInfo{},
 	)
 	handleError(err, "Failed to migrate database")
 }

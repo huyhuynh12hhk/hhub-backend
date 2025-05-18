@@ -8,6 +8,7 @@ import (
 	repositories "hhub/connection-service/internal/repositories/friend"
 	services_follow "hhub/connection-service/internal/services/follow"
 	services "hhub/connection-service/internal/services/friend"
+	cache "hhub/connection-service/third_party/cache/redis"
 	"hhub/connection-service/third_party/database/mysql"
 
 	"github.com/google/wire"
@@ -18,6 +19,7 @@ func InitFriendController() (*controllers.FriendController, error) {
 	wire.Build(
 		mysql.GetInstance,
 		repositories_follow.NewFollowRepository,
+		cache.NewRedis,
 		repositories.NewFriendRepository,
 		services_follow.NewFollowService,
 		services.NewFriendService,

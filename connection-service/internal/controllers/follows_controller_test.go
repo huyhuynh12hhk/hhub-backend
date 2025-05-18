@@ -18,16 +18,8 @@ import (
 var followCtr FollowController = *NewFollowController(services_follow.NewMockFollowService())
 
 var cflRequest = dtos.FollowRequest{
-	Subscriber: dtos.UserVO{
-		Id:       "uuid01",
-		Name:     "User One",
-		ImageUrl: "",
-	},
-	Producer: dtos.UserVO{
-		Id:       "uuid02",
-		Name:     "User Two",
-		ImageUrl: "",
-	},
+	SubscriberId: "uuid01",
+	ProducerId:   "uuid02",
 }
 
 var uflRequest = dtos.UpdateFollowStatusRequest{
@@ -51,7 +43,6 @@ func TestCreateFollowShouldSuccess(t *testing.T) {
 	res := httptest.NewRecorder()
 	router.ServeHTTP(res, req)
 
-
 	assert.Equal(t, http.StatusCreated, res.Code)
 
 }
@@ -66,7 +57,7 @@ func TestUpdateFollowStatusShouldSuccess(t *testing.T) {
 	req := httptest.NewRequest(
 		"PATCH",
 		fmt.Sprintf("/%s",
-			cflRequest.Subscriber.Id),
+			cflRequest.SubscriberId),
 		bytes.NewBuffer(jData))
 
 	res := httptest.NewRecorder()
@@ -84,8 +75,8 @@ func TestRemoveFollowShouldSuccess(t *testing.T) {
 	req := httptest.NewRequest(
 		"DELETE",
 		fmt.Sprintf("/%s/remove/%s",
-			cflRequest.Subscriber.Id,
-			cflRequest.Producer.Id),
+			cflRequest.SubscriberId,
+			cflRequest.ProducerId),
 		nil)
 
 	res := httptest.NewRecorder()
@@ -103,7 +94,7 @@ func TestGetFollowerShouldSuccess(t *testing.T) {
 	req := httptest.NewRequest(
 		"GET",
 		fmt.Sprintf("/%s/followings",
-			cflRequest.Producer.Id),
+			cflRequest.ProducerId),
 		nil)
 
 	res := httptest.NewRecorder()
@@ -121,7 +112,7 @@ func TestGetFollowingsShouldSuccess(t *testing.T) {
 	req := httptest.NewRequest(
 		"GET",
 		fmt.Sprintf("/%s/followers",
-			cflRequest.Subscriber.Id),
+			cflRequest.SubscriberId),
 		nil)
 
 	res := httptest.NewRecorder()

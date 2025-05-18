@@ -6,7 +6,7 @@ import (
 )
 
 func FollowsToResponses(friends []models.Follow) []dtos.FollowResponse {
-	var results []dtos.FollowResponse
+	var results = []dtos.FollowResponse{}
 	for _, follow := range friends {
 		results = append(results, follow.ToResponse())
 	}
@@ -15,10 +15,8 @@ func FollowsToResponses(friends []models.Follow) []dtos.FollowResponse {
 
 func FollowRequestRequestToModel(request *dtos.FollowRequest) models.Follow {
 	return models.Follow{
-		SubscriberId: request.Subscriber.Id,
-		Subscriber:   UserVOToModel(&request.Subscriber),
-		ProducerId:   request.Producer.Id,
-		Producer:     UserVOToModel(&request.Producer),
+		SubscriberId: request.SubscriberId,
+		ProducerId:   request.ProducerId,
 		State:        models.PERSONALIZE,
 	}
 }

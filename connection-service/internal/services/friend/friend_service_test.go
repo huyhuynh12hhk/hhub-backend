@@ -16,39 +16,31 @@ var service IFriendService = NewFriendService(
 )
 
 var cRequest = dtos.AddFriendRequest{
-	Sender: dtos.UserVO{
-		Id:       "uuid01",
-		Name:     "User One",
-		ImageUrl: "",
-	},
-	Receiver: dtos.UserVO{
-		Id:       "uuid02",
-		Name:     "User Two",
-		ImageUrl: "",
-	},
+	SenderId: "uuid01",
+	ReceiverId: "uuid02",
 }
 
 func TestCreateFriendRequestShouldSuccess(t *testing.T) {
 	rs, code, _ := service.CreateFriendRequest(&cRequest)
 
 	assert.Equal(t, response.CreatedSuccess, code)
-	assert.Equal(t, cRequest.Sender.Id, rs.Sender.Id)
+	assert.Equal(t, cRequest.SenderId, rs.SenderId)
 }
 
 func TestAcceptFriendRequestShouldSuccess(t *testing.T) {
-	code, _ := service.AcceptFriendRequest(cRequest.Sender.Id, cRequest.Receiver.Id)
+	code, _ := service.AcceptFriendRequest(cRequest.SenderId, cRequest.ReceiverId)
 
 	assert.Equal(t, response.Accepted, code)
 }
 
 func TestDeclineFriendRequestShouldSuccess(t *testing.T) {
-	code, _ := service.DeclineFriendRequest(cRequest.Sender.Id, cRequest.Receiver.Id)
+	code, _ := service.DeclineFriendRequest(cRequest.SenderId, cRequest.ReceiverId)
 
 	assert.Equal(t, response.Accepted, code)
 }
 
 func TestRemoveFriendShouldSuccess(t *testing.T) {
-	code, _ := service.RemoveFriend(cRequest.Sender.Id, cRequest.Receiver.Id)
+	code, _ := service.RemoveFriend(cRequest.SenderId, cRequest.ReceiverId)
 
 	assert.Equal(t, response.Accepted, code)
 }

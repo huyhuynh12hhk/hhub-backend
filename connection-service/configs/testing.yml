@@ -5,15 +5,20 @@ server:
   prefix:
 mysql:
   host: mysqldb
-  port: 3306
+  port: 3386
   user: root
-  password: "@123456"
+  password: 123A123
   database: test_connection_service
   maxIdleConns: 10
   maxOpenConns: 100
   connMaxLifetime: 3600
-keycloak:
-  url: http://idp-keycloak:8080
-  realm: test-realm-v0.1
-  client: test-internal-client
-  secret: "**********"
+auth:
+  url: http://auth:900
+  client: test-client
+  secret: secret
+
+# keycloak:
+#   url: http://idp-keycloak:8080
+#   realm: test-realm-v0.1
+#   client: test-internal-client
+#   secret: "**********"

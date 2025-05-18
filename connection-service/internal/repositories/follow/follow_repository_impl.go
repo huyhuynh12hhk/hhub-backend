@@ -14,14 +14,7 @@ type _FollowRepository struct {
 // CreateFollow implements IFollowRepository.
 func (r *_FollowRepository) CreateFollow(model *models.Follow) *models.Follow {
 
-	// fmt.Printf("\n\nRepo: Create Follow: %+v\n", model)
-	subscriber := model.Subscriber
-	producer := model.Producer
-	r.db.FirstOrCreate(&subscriber, models.UserInfo{UID: subscriber.UID})
-	// fmt.Printf("\n\nRepo: Create User Info: %+v\n", subscriber)
 
-	r.db.FirstOrCreate(&producer, models.UserInfo{UID: producer.UID})
-	// fmt.Printf("\n\nRepo: Create User Info: %+v\n", producer)
 
 	result := r.db.Create(&model)
 
@@ -37,14 +30,8 @@ func (r *_FollowRepository) CreateFollow(model *models.Follow) *models.Follow {
 // UpdateStatusFollow implements IFollowRepository.
 func (r *_FollowRepository) UpdateFollow(model *models.Follow) *models.Follow {
 
-	fmt.Printf("\n\nRepo: Create Follow: %+v\n", model)
-	subscriber := model.Subscriber
-	producer := model.Producer
-	r.db.FirstOrCreate(&subscriber, models.UserInfo{UID: subscriber.UID})
-	fmt.Printf("\n\nRepo: Create User Info: %+v\n", subscriber)
-
-	r.db.FirstOrCreate(&producer, models.UserInfo{UID: producer.UID})
-	fmt.Printf("\n\nRepo: Create User Info: %+v\n", producer)
+	// fmt.Printf("\n\nRepo: Create Follow: %+v\n", model)
+	
 
 	result := r.db.Create(&model)
 
@@ -72,8 +59,6 @@ func (r *_FollowRepository) GetFollowsByProducerId(producerId string) []models.F
 	var follows []models.Follow
 	r.db.
 		Where(models.Follow{ProducerId: producerId}).
-		Preload("Producer").
-		Preload("Subscriber").
 		Find(&follows)
 
 	// fmt.Printf("\n\nRepo: Follows: %+v\n", follows)
@@ -87,8 +72,6 @@ func (r *_FollowRepository) GetFollowsBySubscriberId(subscriberId string) []mode
 	// s := 
 	r.db.
 		Where(models.Follow{SubscriberId: subscriberId, State: models.PERSONALIZE}).
-		Preload("Producer").
-		Preload("Subscriber").
 		Find(&follows)
 
 	// fmt.Printf("\n\nRepo: GetFollowsBySubscriberId: %+v\n", s.Error)

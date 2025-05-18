@@ -17,10 +17,8 @@ func FriendRequestsToResponses(friends []models.FriendRequest) []dtos.FriendRequ
 
 func AddFriendRequestToModel(request *dtos.AddFriendRequest) models.FriendRequest {
 	return models.FriendRequest{
-		SenderId: request.Sender.Id,
-		Sender: UserVOToModel(&request.Sender),
-		ReceiverId: request.Receiver.Id,
-		Receiver: UserVOToModel(&request.Receiver),
+		SenderId: request.SenderId,
+		ReceiverId: request.ReceiverId,
 		State: models.WAITING,
 	}
 }

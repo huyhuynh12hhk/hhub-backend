@@ -2,7 +2,7 @@ package response
 
 import "net/http"
 
-// TODO: import code and message from json files, for that we can apply cross platform and localization
+// TODO: import code and message from json files (low priority)
 
 const (
 	Success        = 20000
@@ -12,17 +12,18 @@ const (
 	CommonError    = 40000
 	Unauthorized   = 40101
 	NotFound       = 40004
+	ServerError    = 50000
 )
 
 var messageContent = map[int]string{
 	Success:        "Success",
 	CreatedSuccess: "Created Success",
 	Accepted:       "Request accepted",
-	
 	ParamInvalid:   "Invalid parameter",
 	Unauthorized:   "You must login to see this resource",
 	NotFound:       "This resource not exist",
 	CommonError:    "Something when wrong try again later!",
+	ServerError:    "Server error",
 }
 
 var codeToStatus = map[int]int{
@@ -33,4 +34,5 @@ var codeToStatus = map[int]int{
 	Unauthorized:   http.StatusUnauthorized,
 	NotFound:       http.StatusNotFound,
 	CommonError:    http.StatusBadRequest,
+	ServerError:    http.StatusInternalServerError,
 }
