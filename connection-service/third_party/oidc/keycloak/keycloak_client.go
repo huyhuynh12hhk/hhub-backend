@@ -1,29 +1,29 @@
 package keycloak
 
-import (
-	"context"
-	"fmt"
-	"hhub/connection-service/global"
+// import (
+// 	"context"
+// 	"fmt"
+// 	"hhub/connection-service/global"
 
-	"github.com/coreos/go-oidc/v3/oidc"
-)
+// 	"github.com/coreos/go-oidc/v3/oidc"
+// )
 
-func KeycloakVerifier() *oidc.IDTokenVerifier {
+// func KeycloakVerifier() *oidc.IDTokenVerifier {
 
-	ctx := context.Background()
+// 	ctx := context.Background()
 
-	issuer := fmt.Sprintf("%s/realms/%s", global.Config.KeyCloak.Url, global.Config.KeyCloak.Realm)
+// 	issuer := fmt.Sprintf("%s/realms/%s", global.Config.KeyCloak.Url, global.Config.KeyCloak.Realm)
 
-	// panic(fmt.Sprintf("auth url: %+v",path))
-	provider, err := oidc.NewProvider(ctx, issuer)
-	if err != nil {
-		panic(fmt.Sprintf("Error occur when init oidc %+v", err))
-	}
+// 	// panic(fmt.Sprintf("auth url: %+v",path))
+// 	provider, err := oidc.NewProvider(ctx, issuer)
+// 	if err != nil {
+// 		panic(fmt.Sprintf("Error occur when init oidc %+v", err))
+// 	}
 
-	verifier := provider.Verifier(&oidc.Config{
-		// ClientID: global.Config.KeyCloak.Client, 
-		SkipClientIDCheck: true,
-	})
+// 	verifier := provider.Verifier(&oidc.Config{
+// 		// ClientID: global.Config.KeyCloak.Client, 
+// 		SkipClientIDCheck: true,
+// 	})
 
-	return verifier
-}
+// 	return verifier
+// }

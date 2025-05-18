@@ -1,9 +1,11 @@
 package env
 
 type Config struct {
-	Server   ServerSetting   `mapstructure:"server"`
-	MySQL    MySQLSetting    `mapstructure:"mysql"`
-	KeyCloak KeyCloakSetting `mapstructure:"keycloak"`
+	Server ServerSetting     `mapstructure:"server"`
+	MySQL  MySQLSetting      `mapstructure:"mysql"`
+	Auth   AuthServerSetting `mapstructure:"auth"`
+	Redis  RedisSetting      `mapstructure:"redis"`
+	// KeyCloak KeyCloakSetting `mapstructure:"keycloak"`
 }
 
 type ServerSetting struct {
@@ -23,9 +25,20 @@ type MySQLSetting struct {
 	ConnMaxLifetime int    `mapstructure:"connMaxLifetime"`
 }
 
-type KeyCloakSetting struct {
+type AuthServerSetting struct {
 	Url    string `mapstructure:"url"`
-	Realm  string `mapstructure:"realm"`
 	Client string `mapstructure:"client"`
 	Secret string `mapstructure:"secret"`
 }
+
+type RedisSetting struct {
+	Addr     string `mapstructure:"address"`
+	Password string `mapstructure:"password"`
+}
+
+// type KeyCloakSetting struct {
+// 	Url    string `mapstructure:"url"`
+// 	Realm  string `mapstructure:"realm"`
+// 	Client string `mapstructure:"client"`
+// 	Secret string `mapstructure:"secret"`
+// }

@@ -12,6 +12,7 @@ import (
 	"hhub/connection-service/internal/repositories/friend"
 	"hhub/connection-service/internal/services/follow"
 	"hhub/connection-service/internal/services/friend"
+	"hhub/connection-service/third_party/cache/redis"
 	"hhub/connection-service/third_party/database/mysql"
 )
 
@@ -20,7 +21,8 @@ import (
 func InitFollowController() (*controllers.FollowController, error) {
 	db := mysql.GetInstance()
 	iFollowRepository := repositories_follow.NewFollowRepository(db)
-	iFollowService := services_follow.NewFollowService(iFollowRepository)
+	redisClient := cache.NewRedis()
+	iFollowService := services_follow.NewFollowService(iFollowRepository, redisClient)
 	followController := controllers.NewFollowController(iFollowService)
 	return followController, nil
 }
@@ -31,7 +33,8 @@ func InitFriendController() (*controllers.FriendController, error) {
 	db := mysql.GetInstance()
 	iFriendRepository := repositories_friend.NewFriendRepository(db)
 	iFollowRepository := repositories_follow.NewFollowRepository(db)
-	iFollowService := services_follow.NewFollowService(iFollowRepository)
+	redisClient := cache.NewRedis()
+	iFollowService := services_follow.NewFollowService(iFollowRepository, redisClient)
 	iFriendService := services_friend.NewFriendService(iFriendRepository, iFollowService)
 	friendController := controllers.NewFriendController(iFriendService)
 	return friendController, nil

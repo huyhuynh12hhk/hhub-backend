@@ -16,14 +16,14 @@ type _FriendRepository struct {
 func (f *_FriendRepository) CreateFriendRequest(model *models.FriendRequest) *models.FriendRequest {
 
 
-	// fmt.Printf("\n\nRepo: Create Friend request: %+v\n", model)
-	sender := model.Sender
-	receiver := model.Receiver
-	f.db.FirstOrCreate(&sender, models.UserInfo{UID: sender.UID})
-	// fmt.Printf("\n\nRepo: Create User Info: %+v\n", sender)
+	// // fmt.Printf("\n\nRepo: Create Friend request: %+v\n", model)
+	// sender := model.Sender
+	// receiver := model.Receiver
+	// f.db.FirstOrCreate(&sender, models.UserInfo{UID: sender.UID})
+	// // fmt.Printf("\n\nRepo: Create User Info: %+v\n", sender)
 
-	f.db.FirstOrCreate(&receiver, models.UserInfo{UID: receiver.UID})
-	// fmt.Printf("\n\nRepo: Create User Info: %+v\n", receiver)
+	// f.db.FirstOrCreate(&receiver, models.UserInfo{UID: receiver.UID})
+	// // fmt.Printf("\n\nRepo: Create User Info: %+v\n", receiver)
 
 	result := f.db.Create(&model)
 
@@ -70,8 +70,6 @@ func (f *_FriendRepository) GetFriendList(ownerId string) []models.FriendRequest
 		// Or("sender_id = ?", ownerId).
 		Where(models.FriendRequest{ReceiverId: ownerId, State: models.ACCEPTED}).
 		Or(models.FriendRequest{SenderId: ownerId}).
-		Preload("Sender").
-		Preload("Receiver").
 		Find(&friends)
 
 	// fmt.Printf("\n\nRepo: Friend request: %+v\n", friends)
@@ -84,8 +82,6 @@ func (f *_FriendRepository) GetFriendRequestByReceiverId(receiverId string) []mo
 	var friends []models.FriendRequest
 	f.db.
 		Where(models.FriendRequest{ReceiverId: receiverId, State: models.WAITING}).
-		Preload("Sender").
-		Preload("Receiver").
 		Find(&friends)
 
 	// fmt.Printf("\n\nRepo: Friend requests: %+v\n", friends)
@@ -99,8 +95,6 @@ func (f *_FriendRepository) GetFriendRequestBySenderId(senderId string) []models
 	f.db.
 		Where(models.FriendRequest{SenderId: senderId}).
 		// Where("sender_id = ?", senderId).
-		Preload("Sender").
-		Preload("Receiver").
 		Find(&friends)
 
 	// fmt.Printf("\n\nRepo: Friend requests: %+v\n", friends)

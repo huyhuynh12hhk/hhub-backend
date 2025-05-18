@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"hhub/connection-service/global"
 	"os"
+	"strings"
 
 	"github.com/spf13/viper"
 )
@@ -20,6 +21,10 @@ func AddConfiguration() {
 	if err := viper.ReadInConfig(); err != nil {
 		panic(fmt.Errorf("fatal error config file: %w", err))
 	}
+	
+	//dynamic reading
+	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
 	// Map to global settings
 	if err := viper.Unmarshal(&global.Config); err != nil {

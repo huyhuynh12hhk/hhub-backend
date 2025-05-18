@@ -4,16 +4,18 @@ server:
   # prefix: "/api/v1"
   prefix:
 mysql:
-  host: mysqldb
-  port: 3306
+  host: 127.0.0.1
+  port: 3386
   user: root
-  password: "@123456"
+  password: 123A123
   database: test_connection_service
   maxIdleConns: 10
   maxOpenConns: 100
   connMaxLifetime: 3600
-keycloak:
-  url: http://idp-keycloak:8080
-  realm: test-realm-v0.1
-  client: test-internal-client
-  secret: "**********"
+auth:
+  url: http://localhost:9000
+  client: test-client
+  secret: secret
+redis:
+  address: :6379
+  password: testpass
