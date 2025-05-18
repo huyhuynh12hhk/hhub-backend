@@ -1,15 +1,18 @@
 "use strict";
 
-const { notification } = require("../database/models/notifyMessageSchema");
+const { Notification: notification } = require("../database/models/NotifyMessageSchema");
+const { createMessage, getMessages } = require("../database/repositories/NotifyMessageRepository");
+
 
 const saveMessage = async ({ type = "Default", receiverId, senderId, content, options = {} }) => {
 	// if (type === "Default") {
 
 	// }
-	console.log(`${Date.now().toString("yyyy/MM/dd")}:: Saving message: ${type} - ${receiverId} - ${senderId} - ${content}`);
+	console.log(
+		`${Date.now().toString("yyyy/MM/dd")}:: Saving message: ${type} - ${receiverId} - ${senderId} - ${content}`
+	);
 
-
-	const newNoti = await notification.create({
+	const newNoti = await createMessage({
 		noti_type: type,
 		noti_content: content,
 		noti_senderId: senderId,
@@ -20,7 +23,24 @@ const saveMessage = async ({ type = "Default", receiverId, senderId, content, op
 	return newNoti;
 };
 
+const getNotification = async ({ userId, cursor = null }) => {
+
+
+
+	console.log(
+		`${Date.now().toString("yyyy/MM/dd")}:: Saving message: ${type} - ${receiverId} - ${senderId} - ${content}`
+	);
+
+	const messages = await getMessages({
+		userId,
+		cursor
+	});
+
+	return newNoti;
+};
+
 
 module.exports = {
 	saveMessage,
+	getNotification
 };

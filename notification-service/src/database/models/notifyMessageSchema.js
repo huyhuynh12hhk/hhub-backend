@@ -6,7 +6,7 @@ const DOCUMENT_NAME = "Notification"; // Set the collection name
 const COLLECTION_NAME = "notifications"; // Set the collection name
 
 // Declare the Schema of the Mongo model
-var notificationSchema = new mongoose.Schema({
+var NotificationSchema = new mongoose.Schema({
 	noti_type: { type: String, required: true, enum: ["Default", "Message", "FriendRequest", "GroupInvite"] },
 	noti_content: { type: String, required: true },
 	noti_senderId: { type: String, required: true },
@@ -18,4 +18,4 @@ var notificationSchema = new mongoose.Schema({
 });
 
 //Export the model
-module.exports = {notification: mongoose.model(DOCUMENT_NAME, notificationSchema)}
+module.exports = {Notification: mongoose.model(DOCUMENT_NAME, NotificationSchema)}
