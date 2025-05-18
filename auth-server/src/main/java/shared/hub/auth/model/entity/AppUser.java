@@ -39,10 +39,12 @@ public class AppUser extends AuditEntity implements UserDetails {
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "app_user_role", joinColumns = @JoinColumn(name = "app_user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
-    @CreatedDate
-    private LocalDateTime createdDate;
-    @LastModifiedDate
-    private LocalDateTime lastModifiedDate;
+//    @CreatedDate
+    @Builder.Default
+    private LocalDateTime createdDate = LocalDateTime.now();
+//    @LastModifiedDate
+    @Builder.Default
+    private LocalDateTime lastModifiedDate = LocalDateTime.now();
 
 
     @Override

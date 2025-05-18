@@ -1,21 +1,21 @@
 server:
   port: 9000
 
-logging:
-  level:
-    root: INFO
-    org.springframework.web: INFO
-    org.springframework.security: TRACE
-    org.springframework.security.oauth2: TRACE
+#logging:
+#  level:
+#    root: INFO
+#    org.springframework.web: INFO
+#    org.springframework.security: TRACE
+#    org.springframework.security.oauth2: TRACE
 
 spring:
   application:
     name: auth-server
   datasource:
-    url: "jdbc:mysql://localhost:3386/identity"
+    url: ${AUTH_DB_URL}
     driverClassName: "com.mysql.cj.jdbc.Driver"
-    username: ${MYSQL_USER:root}
-    password: ${MYSQL_PASSWORD:123A123}
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
   jpa:
     database: mysql
     hibernate:
@@ -30,9 +30,9 @@ spring:
       indent-output: true
   data:
     redis:
-      host: localhost
+      host: {REDIS_HOST}
       port: 6379
-      password: ${REDIS_PASSWORD:testpass}
+      password: ${REDIS_PASSWORD}
       lettuce:
         pool:
           max-active: 10 # Maximum number of active connections in the pool
@@ -42,11 +42,11 @@ spring:
   security:
     oauth2:
       authorizationserver:
-        issuer: http://authX:9000
+        issuer: ${AUTH_CLIENT_ISSUER}
       resourceserver:
         jwt:
-          issuer-uri: http://authX:9000
-          jwt-set-uri: http://authX:9000/oauth2/jwks
+          issuer-uri: ${AUTH_CLIENT_URL}
+          jwt-set-uri: ${AUTH_CLIENT_URL}/oauth2/jwks
 #      client:
 #        registration:
 #          google:
@@ -69,4 +69,4 @@ feign:
 
 app:
   services:
-    profile: http://profileX:8000
+    profile: ${PROFILE_SERVICE_URL}

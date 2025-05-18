@@ -2,9 +2,11 @@ package shared.hub.auth.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import shared.hub.auth.constant.Roles;
@@ -18,6 +20,7 @@ import shared.hub.auth.exception.NotifyCode;
 import shared.hub.auth.mapper.UserMapper;
 import shared.hub.auth.model.entity.AppUser;
 import shared.hub.auth.model.entity.Role;
+import shared.hub.auth.model.event.UserSavedEvent;
 import shared.hub.auth.repository.AppUserRepository;
 import shared.hub.auth.repository.ProfileHttpClient;
 import shared.hub.auth.repository.RoleRepository;
@@ -39,6 +42,10 @@ public class AppUserServiceImpl implements AppUserService {
     private final PasswordEncoder passwordEncoder;
     private final UserCacheService userCacheService;
     private final ProfileHttpClient profileHttpClient;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+
+    @Value(value = "${kafka.topic.user.saved}")
+    private String savedUserTopic;
 
     @Override
     public ResponseEntity<ApiResponse<UserResponse>> createUser(CreateUserRequest request) {
@@ -60,13 +67,21 @@ public class AppUserServiceImpl implements AppUserService {
         appUser.setRoles(roles);
         userRepository.save(appUser);
 
-        profileHttpClient.createProfile(
-                ProfileCreationRequest.builder()
-                        .email(appUser.getEmail())
-                        .uid(appUser.getId())
-                        .fullName(request.getFullName())
-                        .build()
-        );
+        try {
+            profileHttpClient.createProfile(
+                    ProfileCreationRequest.builder()
+                            .uid(appUser.getId())
+                            .email(appUser.getEmail())
+                            .username(appUser.getUsername())
+                            .fullName(request.getFullName())
+                            .build()
+            );
+        } catch (Exception e) {
+            log.error("Fail to call profile service.");
+        }
+
+        kafkaTemplate.send(savedUserTopic, UserMapper.mapToSavedUserEvent(appUser));
+
 
         var notiCode = NotifyCode.CREATED;
         var response = ApiResponse.success(UserMapper.mapToUserResponse(appUser), notiCode);
@@ -89,29 +104,23 @@ public class AppUserServiceImpl implements AppUserService {
         Role role = roleRepository.findByName(Roles.ROLE_USER)
                 .orElseThrow(() -> new AppException(NotifyCode.INTERNAL_SERVER_ERROR));
         appUser.setRoles(new HashSet<>(List.of(role)));
-        userRepository.save(appUser);
+//        userRepository.save(appUser);
 
-//        var profile = ProfileCreationRequest.builder()
-//                .email(appUser.getEmail())
-//                .uid(appUser.getId())
-//                .username(appUser.getUsername())
-//                .fullName(appUser.getFullName())
-//                .build();
+//        try {
+//            profileHttpClient.createProfile(
+//                    ProfileCreationRequest.builder()
+//                            .uid(appUser.getId())
+//                            .email(appUser.getEmail())
+//                            .username(appUser.getUsername())
+//                            .fullName(request.getFullName())
+//                            .build()
+//            );
+//        } catch (Exception e) {
+//            log.error("Fail to call profile service.");
+//        }
+        var event = UserMapper.mapToSavedUserEvent(appUser);
 
-//                profile
-        try {
-            profileHttpClient.createProfile(
-                    ProfileCreationRequest.builder()
-                            .uid(appUser.getId())
-                            .email(appUser.getEmail())
-                            .username(appUser.getUsername())
-                            .fullName(request.getFullName())
-                            .build()
-            );
-        } catch (Exception e) {
-            log.error("Fail to call profile service.");
-        }
-
+        kafkaTemplate.send(savedUserTopic, event);
 
         var notiCode = NotifyCode.CREATED;
         var response = ApiResponse.success(UserMapper.mapToUserResponse(appUser), notiCode);

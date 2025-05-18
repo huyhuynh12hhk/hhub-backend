@@ -12,10 +12,10 @@ spring:
   application:
     name: auth-server
   datasource:
-    url: "jdbc:mysql://localhost:3386/identity"
+    url: ${AUTH_DB_URL}
     driverClassName: "com.mysql.cj.jdbc.Driver"
-    username: ${MYSQL_USER:root}
-    password: ${MYSQL_PASSWORD:123A123}
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
   jpa:
     database: mysql
     hibernate:
@@ -30,23 +30,34 @@ spring:
       indent-output: true
   data:
     redis:
-      host: localhost
-      port: 6379
-      password: ${REDIS_PASSWORD:testpass}
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
       lettuce:
         pool:
           max-active: 10 # Maximum number of active connections in the pool
           max-idle: 5 # Maximum number of idle connections in the pool
           min-idle: 5 # Minimum number of idle connections in the pool
       connect-timeout: 30000 # Connection timeout (in milliseconds)
+  elasticsearch:
+    uris: ${ELASTIC_URL}
+  kafka:
+    bootstrap-servers: ${KAFKA_URLS}
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        "[spring.json.type.mapping]": userSaved:shared.hub.auth.model.event.UserSavedEvent
+    consumer:
+      group-id: auth-user
+      value-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
   security:
     oauth2:
       authorizationserver:
-        issuer: http://authX:9000
+        issuer: ${AUTH_SERVER_ISSUER}
       resourceserver:
         jwt:
-          issuer-uri: http://authX:9000
-          jwt-set-uri: http://authX:9000/oauth2/jwks
+          issuer-uri: ${AUTH_SERVER_URL}
+          jwt-set-uri: ${AUTH_SERVER_URL}/oauth2/jwks
 #      client:
 #        registration:
 #          google:
@@ -69,4 +80,4 @@ feign:
 
 app:
   services:
-    profile: http://profileX:8000
+    profile: ${PROFILE_SERVICE_URL}
