@@ -16,12 +16,13 @@ namespace blog_api.Repositories.Http
 
         public async Task<BaseRepsonse<UserResponse>?> GetByUIDAsync(string uid)
         {
-            throw new NotImplementedException();
+            return await _httpClient.GetFromJsonAsync<BaseRepsonse<UserResponse>>(uid);
         }
 
         public async Task<BaseRepsonse<UserResponse>?> GetByUsernameAsync(string username)
         {
-            return await _httpClient.GetFromJsonAsync<BaseRepsonse<UserResponse>>(username);
+            throw new NotImplementedException();
+            //return await _httpClient.GetFromJsonAsync<BaseRepsonse<UserResponse>>(username);
         }
     }
 }

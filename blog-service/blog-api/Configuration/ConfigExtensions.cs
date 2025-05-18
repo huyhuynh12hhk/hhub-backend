@@ -9,6 +9,8 @@ using blog_api.Repositories.Http;
 
 using Confluent.Kafka;
 
+using Elastic.Clients.Elasticsearch;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -100,6 +102,7 @@ namespace blog_api.Configuration
                 AutoOffsetReset = AutoOffsetReset.Earliest,
                 EnableAutoCommit = false,
                 AllowAutoCreateTopics = true,
+
             };
             services.AddSingleton(consumerConfig);
 
@@ -112,6 +115,7 @@ namespace blog_api.Configuration
         {
             services.AddHttpClient<IUserRepository, UserHttpRepository>();
             services.AddHttpClient<IFollowRepository, FollowHttpRepository>();
+            services.AddHttpClient<ITokenRepository, TokenHttpRepository>();
 
             return services;
         }
@@ -203,6 +207,46 @@ namespace blog_api.Configuration
 
 
             return services;
+        }
+
+        public static IServiceCollection AddElasticSearch(this IServiceCollection services, IConfiguration configuration)
+        {
+            var elasticSection = configuration.GetSection("Elastic");
+            var elasticConfig = elasticSection.Get<ElasticSettings>() ?? throw new Exception("Cannot read elsatic configuration");
+            services.Configure<ElasticSettings>(elasticSection);
+
+            var baseUrl = elasticConfig.BaseUrl;
+            var index = elasticConfig.DefaultIndex;
+            var settings = new ElasticsearchClientSettings(new Uri(baseUrl ?? ""))
+                //.Authentication()
+                .DefaultIndex(index);
+
+            var client = new ElasticsearchClient(settings);
+            services.AddSingleton(client);
+
+            services.AddScoped<ISearchRepository, SearchHttpRepository>();
+
+
+
+            return services;
+        }
+
+        //private static void CreateIndex(IElasticClient client, string indexName)
+        public static void InitElasticIndex(this WebApplication app, IConfiguration configuration)
+        {
+            var client = app.Services.GetRequiredService<ElasticsearchClient>();
+            var index = configuration["Elastic:DefaultIndex"]!;
+            if (!client.Indices.Exists(index).Exists)
+            {
+
+                var createIndexResponse = client.Indices.Create(index);
+                if (!createIndexResponse.IsValidResponse)
+                {
+                    throw new Exception($"Fail to init index {createIndexResponse.DebugInformation}.");
+                }
+                app.Logger.LogInformation($"Create elastic index {index}.");
+            }
+
         }
 
 

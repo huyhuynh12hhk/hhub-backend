@@ -21,7 +21,7 @@
 
         public T? Data { get; set; }
 
-        public static BaseRepsonse<T> Success(T value)
+        public static BaseRepsonse<T> Success(T value, string message = "Success")
         {
             return new BaseRepsonse<T>
             {

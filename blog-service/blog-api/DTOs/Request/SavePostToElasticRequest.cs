@@ -1,6 +1,6 @@
-﻿namespace blog_api.Models.Events
+﻿namespace blog_api.DTOs.Request
 {
-    public class PostSavedEvent
+    public class SavePostToElasticRequest
     {
         public string PostId { get; set; } = null!;
         public string AuthorId { get; set; } = null!;

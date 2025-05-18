@@ -1,9 +1,14 @@
 ﻿using AutoMapper;
 
+using blog_api.Configuration;
 using blog_api.DTOs.Request;
 using blog_api.Models.Entities;
 using blog_api.Repositories;
 using blog_api.Services.Interface;
+
+using Microsoft.Extensions.Caching.Distributed;
+
+using Microsoft.Extensions.Options;
 
 namespace blog_api.Services
 {
@@ -13,8 +18,12 @@ namespace blog_api.Services
         private readonly IFeedService _feedService;
         private readonly ILogger<PostService> _logger;
         private readonly IMapper _mapper;
+        private readonly IDistributedCache _cache;
+        private readonly RedisSettings _redisConf;
 
         public PostService(
+            IDistributedCache cache,
+            IOptions<RedisSettings> redisConf,
             IMongoDBRepository<Post> _postRepository,
             IMapper _mapper, ILogger<PostService> logger,
             IFeedService feedService)
@@ -22,7 +31,9 @@ namespace blog_api.Services
             this._postRepository = _postRepository;
             this._mapper = _mapper;
             this._logger = logger;
-            _feedService = feedService;
+            this._feedService = feedService;
+            this._cache = cache;
+            this._redisConf = redisConf.Value;
         }
 
         public async Task<List<Post>> GetPosts()
@@ -32,9 +43,21 @@ namespace blog_api.Services
             return posts.OrderByDescending(e => e.CreatedAt).ToList();
         }
 
-        public async Task<Post> GetPostById(string id)
+        public async Task<Post?> GetPostById(string id)
         {
-            var post = await _postRepository.GetAsync(id);
+            var cacheKey = $"{_redisConf.FeedKey}:{id}";
+            var cacheOptions = new DistributedCacheEntryOptions()
+                .SetAbsoluteExpiration(TimeSpan.FromMinutes(10));
+            var post = await _cache.GetOrSetAsync(
+                cacheKey,
+                async () =>
+                {
+                    _logger.LogInformation("No cache found for key: {0}, fetch from http service.", cacheKey);
+                    return await _postRepository.GetAsync(id);
+                },
+                cacheOptions
+
+            );
 
             return post;
         }

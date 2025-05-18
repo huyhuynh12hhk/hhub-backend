@@ -90,7 +90,6 @@ namespace blog_api.Repositories
 
             var combinedFilter = filterBuilder.And(baseFilter, pagingFilter);
 
-            // Check has more
             var page = await dbCollection
                 .Find(combinedFilter)
                 .SortByDescending(x => x.CreatedAt)
@@ -98,7 +97,6 @@ namespace blog_api.Repositories
                 .Limit(limit + 1)
                 .ToListAsync();
 
-            // Next Cursor
             bool hasMore = page.Count > limit;
             if (hasMore) page.RemoveAt(page.Count - 1);
 
@@ -117,10 +115,9 @@ namespace blog_api.Repositories
                 );
             }
 
-            // 7. Return paginated list
             return new CursorPaginatedList<T>(
-                page,          // items
-                nextCursor,    // new cursor or null
+                page,
+                nextCursor,
                 limit,
                 hasMore
             );

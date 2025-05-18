@@ -9,7 +9,7 @@ namespace blog_api.Services
         Task<Post> UpdatePost(string id, UpdatePostRequest request);
         Task ToggleReaction(string id, MakeReactionRequest request);
         Task DeletePost(string id);
-        Task<Post> GetPostById(string id);
+        Task<Post?> GetPostById(string id);
         Task<List<Post>> GetPosts();
     }
 }
