@@ -19,24 +19,24 @@ namespace blog_api.Controllers
     [ApiController]
     public class CommentsController : ControllerBase
     {
-        private readonly ICommentService commentService;
-        private readonly IMapper mapper;
+        private readonly ICommentService _commentService;
+        private readonly IMapper _mapper;
 
         public CommentsController(ICommentService commentService, IMapper mapper)
         {
-            this.commentService = commentService;
-            this.mapper = mapper;
+            this._commentService = commentService;
+            this._mapper = mapper;
         }
 
         [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetAll([Required][FromQuery] string postId)
         {
-            var result = await commentService.GetComments(postId);
+            var result = await _commentService.GetComments(postId);
 
             return Ok(BaseRepsonse<List<CommentResponse>>
                 .Success(
-                    mapper.Map<List<CommentResponse>>(result)
+                    _mapper.Map<List<CommentResponse>>(result)
                 ));
         }
 
@@ -44,11 +44,11 @@ namespace blog_api.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> Get([Required] string id)
         {
-            var result = await commentService.GetCommentById(id);
+            var result = await _commentService.GetCommentById(id);
 
             return Ok(BaseRepsonse<CommentResponse>
                 .Success(
-                    mapper.Map<CommentResponse>(result)
+                    _mapper.Map<CommentResponse>(result)
                 ));
         }
 
@@ -56,11 +56,11 @@ namespace blog_api.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] CreateCommentRequest request)
         {
-            var result = await commentService.CreateComment(request);
+            var result = await _commentService.CreateComment(request);
 
             return Ok(BaseRepsonse<CommentResponse>
                 .Success(
-                    mapper.Map<CommentResponse>(result)
+                    _mapper.Map<CommentResponse>(result)
                 ));
         }
 
@@ -68,11 +68,11 @@ namespace blog_api.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(string id, [FromBody] UpdateCommentRequest request)
         {
-            var result = await commentService.UpdateComment(id, request);
+            var result = await _commentService.UpdateComment(id, request);
 
             return Ok(BaseRepsonse<CommentResponse>
                 .Success(
-                    mapper.Map<CommentResponse>(result)
+                    _mapper.Map<CommentResponse>(result)
                 ));
         }
 
@@ -80,7 +80,7 @@ namespace blog_api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete([Required] string id)
         {
-            await commentService.DeleteComment(id);
+            await _commentService.DeleteComment(id);
 
             return NoContent();
         }

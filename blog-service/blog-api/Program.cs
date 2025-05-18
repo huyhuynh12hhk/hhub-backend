@@ -14,16 +14,14 @@ var env = builder.Environment.EnvironmentName;
 string connectionString = env.ToLower().Equals("production") ? config["DB_CONNECT"]! : mongoConfig.ConnectionString!;
 
 
-builder.Services.AddControllers()
-    //.AddNewtonsoftJson()
-    ;
-
+builder.Services.AddControllers();
 
 ConfigExtensions.SetupNewtonsoftJson();
 
 builder.Services.AddAppHttpClient(config);
 builder.Services.AddRedis(config);
 builder.Services.AddKafkaConfig(config);
+builder.Services.AddElasticSearch(config);
 
 builder.Services.AddServiceSwagger(config);
 builder.Services.AddJWTAuthorization(config);
@@ -47,8 +45,9 @@ builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IFeedService, FeedService>();
 
 var app = builder.Build();
-
+//app.Logger.LogInformation($"Connet success to {connectionString}");
 app.Logger.LogInformation($"Start application in \"{env}\" environment.");
+app.InitElasticIndex(config);
 app.UseServiceSwagger(config);
 
 app.UseAuthentication();
