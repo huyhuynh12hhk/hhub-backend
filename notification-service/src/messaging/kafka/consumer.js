@@ -1,8 +1,8 @@
 const { Kafka, logLevel } = require("kafkajs");
 const {
 	kafka: { brokers, clientId, groupId, topic },
-} = require("../../configs/app.settings");
-const { saveMessage } = require("../../services/notificationService");
+} = require("../../configs/appSettings");
+const { saveMessage } = require("../../services/NotificationService");
 //console.log("KK Port: ", brokers);
 const kafka = new Kafka({
 	logLevel: logLevel.INFO,
