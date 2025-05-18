@@ -3,8 +3,10 @@ package shared.hub.auth.mapper;
 import org.springframework.beans.BeanUtils;
 import shared.hub.auth.dto.request.CreateUserRequest;
 import shared.hub.auth.dto.request.RegisterUserRequest;
+import shared.hub.auth.dto.request.SaveUserToElasticRequest;
 import shared.hub.auth.dto.response.UserResponse;
 import shared.hub.auth.model.entity.AppUser;
+import shared.hub.auth.model.event.UserSavedEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,9 +17,25 @@ public class UserMapper {
         if (Objects.isNull(user)) return null;
         UserResponse response = new UserResponse();
         BeanUtils.copyProperties(user, response);
-        response.setCreatedDate(user.getCreatedDate().toString());
+//        response.setCreatedDate(user.getCreatedDate().toString());
         return response;
     }
+
+    public static UserSavedEvent mapToSavedUserEvent(AppUser user) {
+        if (Objects.isNull(user)) return null;
+        UserSavedEvent event = new UserSavedEvent();
+        BeanUtils.copyProperties(user, event);
+        event.setCreatedDate(user.getCreatedDate().toString());
+        return event;
+    }
+
+    public static SaveUserToElasticRequest mapToUserSearchDoc(UserSavedEvent event) {
+        if (Objects.isNull(event)) return null;
+        SaveUserToElasticRequest request = new SaveUserToElasticRequest();
+        BeanUtils.copyProperties(event, request);
+        return request;
+    }
+
 
     public static List<UserResponse> mapToListUserResponse(List<AppUser> users) {
         List<UserResponse> response = new ArrayList<>();
