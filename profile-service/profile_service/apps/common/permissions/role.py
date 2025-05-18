@@ -1,3 +1,5 @@
+import logging
+
 import jwt
 from django.conf import settings
 from rest_framework import permissions, exceptions
@@ -6,6 +8,7 @@ from rest_framework.exceptions import PermissionDenied
 from profile_service.apps.common.constants.roles import RolesConst
 from profile_service.apps.common.utils.token import extract_token
 
+logger = logging.getLogger(__name__)
 
 class IsAdminRole(permissions.BasePermission):
 
@@ -13,8 +16,10 @@ class IsAdminRole(permissions.BasePermission):
 
         try:
             # return True
-
-            payload = extract_token(request)
+            logger.debug("Request in Admin Permission")
+            logger.debug(request.auth)
+            payload = request.auth
+            # extract_token(request)
             if payload is None or payload is False:
                 return False
 
@@ -33,10 +38,7 @@ class IsAdminRole(permissions.BasePermission):
         # return False
 
 def has_role(roles: [str], role_name: str) -> bool:
-    rs = any(role_name.lower() in x for x in roles)
-    print("Check rs: ",rs)
-    return  rs
-
+    return any(role_name.lower() in x.lower().removeprefix('role_') for x in roles)
 
 def has_scope(scope_string: str, scope: str) -> bool:
     return scope in scope_string.split()

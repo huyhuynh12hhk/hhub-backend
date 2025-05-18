@@ -22,15 +22,13 @@ env_file = f'.env.{environment}'
 
 environ.Env.read_env(os.path.join(ROOT_DIR, env_file))
 
-KEYCLOAK_URL=env.str('KEYCLOAK_URL')
-KEYCLOAK_REALM=env.str('KEYCLOAK_REALM')
-KEYCLOAK_CLIENT=env.str('KEYCLOAK_CLIENT')
-KEYCLOAK_CLIENT_SECRET=env.str('KEYCLOAK_CLIENT_SECRET')
+AUTH_SERVER = env.str("AUTH_SERVER_URL")
+ISSUER = env.str("AUTH_ISSUER")
+SECRET_KEY = env.str("AUTH_SECRET")
 
 DEBUG = env.bool('DEBUG', default=False)
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
-
 
 INTERNAL_IPS = [
     '127.0.0.1',
@@ -65,14 +63,14 @@ LOCAL_MIDDLEWARE = [
 ]
 
 MIDDLEWARE = LOCAL_MIDDLEWARE + [
-                 "django.middleware.security.SecurityMiddleware",
-                 "django.contrib.sessions.middleware.SessionMiddleware",
-                 "django.middleware.common.CommonMiddleware",
-                 "django.middleware.csrf.CsrfViewMiddleware",
-                 "django.contrib.auth.middleware.AuthenticationMiddleware",
-                 "django.contrib.messages.middleware.MessageMiddleware",
-                 "django.middleware.clickjacking.XFrameOptionsMiddleware",
-             ] + THIRD_PARTY_MIDDLEWARE
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+] + THIRD_PARTY_MIDDLEWARE
 
 ROOT_URLCONF = "profile_service.core.urls"
 
@@ -97,9 +95,6 @@ ASGI_APPLICATION = 'profile_service.core.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
-
-
 
 DATABASES = {
     "default": env.db()
@@ -153,7 +148,8 @@ REST_FRAMEWORK = {
 
     # keycloak oauth2 mechanism
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'profile_service.apps.common.authentications.keycloak.KeycloakAuthentication',
+        # 'profile_service.apps.common.authentications.keycloak.KeycloakAuthentication',
+        'profile_service.apps.common.authentications.oa2_resource.ResourceServerJWTAuthentication',
     ),
 
     'DEFAULTPARSERCLASSES': (
@@ -168,15 +164,22 @@ REST_FRAMEWORK = {
 }
 
 LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
         },
     },
-    "root": {
-        "handlers": ["console"],
-        "level": "WARNING",
+    'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'DEBUG',  # Set the minimum level to log
+        },
+        'profile_service': {  # Specific logger for your app
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,  # Don't let messages propagate to the root logger
+        },
     },
 }

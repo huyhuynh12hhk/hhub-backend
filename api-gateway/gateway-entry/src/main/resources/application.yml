@@ -10,15 +10,21 @@ debug: true
 app:
   api-prefix: /api/v1
   def:
-    identity:
-      host: http://localhost:8080
-      root: identity
     profile:
       host: http://localhost:8000
       root: account
     blog:
       host: http://localhost:5050
       root: blog
+    connect:
+      host: http://localhost:8224
+      root: connect
+    noti:
+      host: http://localhost:8060
+      root: noti
+    search:
+      host: http://localhost:9200
+      root: search
 
 spring:
   application:
@@ -27,25 +33,26 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: http://localhost:8181/realms/hhub/protocol/openid-connect/certs
+          issuer-uri: http://localhost:9000
+          jwk-set-uri: http://localhost:9000/oauth2/jwks
       client:
         provider:
-          keycloak:
-            issuer-uri: http://localhost:8181/realms/hhub
+          spring:
+            issuer-uri: http://localhost:9000
         registration:
-          internal-service:
-            provider: keycloak
-            client-id: test-service-client
-            client-secret: AJBuZX6Phe3qOWjIqztNEln6RGYe6343
+          spring-auth:
+            provider: spring
+            client-id: test-client
+            client-secret: secret
             authorization-grant-type: authorization_code
             scope: openid
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
   cloud:
     circuitbreaker:
       resilience4j:
         enabled: true
     gateway:
       routes:
-
         - id: profile_service
           uri: ${app.def.profile.host}
           predicates:
@@ -65,6 +72,36 @@ spring:
             - name: CircuitBreaker
               args:
                 name: blog_break
+                fallbackUri: forward:/fallback
+        - id: connection_service
+          uri: ${app.def.connect.host}
+          predicates:
+            - Path=${app.api-prefix}/${app.def.connect.root}/**
+          filters:
+            - StripPrefix=3
+            - name: CircuitBreaker
+              args:
+                name: conn_break
+                fallbackUri: forward:/fallback
+        - id: notification_service
+          uri: ${app.def.noti.host}
+          predicates:
+            - Path=${app.api-prefix}/${app.def.noti.root}/**
+          filters:
+            - StripPrefix=3
+            - name: CircuitBreaker
+              args:
+                name: noti_break
+                fallbackUri: forward:/fallback
+        - id: search_service
+          uri: ${app.def.search.host}
+          predicates:
+            - Path=${app.api-prefix}/${app.def.search.root}/**
+          filters:
+            - StripPrefix=3
+            - name: CircuitBreaker
+              args:
+                name: search_break
                 fallbackUri: forward:/fallback
 
 # Actuator Endpoints
