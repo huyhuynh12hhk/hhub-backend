@@ -11,6 +11,14 @@ Inspired by an idea about a large-scale social networking platform that support 
 <!-- <div align="center" >
 <img src="./docs/asserts/architect01.png" style="max-height:400px">
 </div> -->
+---
+
+<details>
+<summary>
+  
+  <h3>Design Overview</h3>
+  
+</summary>
 
 | Service              | Main Tech Stack                   | Description                                                                              |
 | -------------------- | --------------------------------- | ---------------------------------------------------------------------------------------- |
@@ -20,11 +28,6 @@ Inspired by an idea about a large-scale social networking platform that support 
 | Blog Service         | ASP.NET Core Web API              | Resource server for post features                                                        |
 | Connection Service   | Go with Gin                       | Resource server for user connection features                                             |
 | Notification Service | Node.js Express                   | Resource server for notification features                                                |
-
----
-
-<details>
-<summary><h3>Design Overview</h3></summary>
 
 **Identity Provider**:
 
@@ -73,14 +76,14 @@ The UI is developed in **ReactJS**, incorporating key libraries: **MUI** for com
 
 <h3>Upcoming work</h3>
 
-[ ] Looks like it will take me a little longer before the first delivery to **EKS**.
+- [ ] Looks like it will take me a little longer before the first delivery to **EKS**.
 
-[ ] Add **federated authentication** and complete Oauth2 implement 
+- [ ] Add **federated authentication** and complete Oauth2 implement 
 
-[ ] Of course, **enhanced test coverage**.
+- [ ] Of course, **enhanced test coverage**.
 
-[ ] Get everything integrated **from front to back** for these new features.
+- [ ] Get everything integrated **from front to back** for these new features.
 
-[ ] A **big refactor** with several modify of **database layer** for performance practices.
+- [ ] A **big refactor** with several modify of **database layer** for performance practices.
 
-[ ] Security aspect with **security testing** also needs to be considered.
+- [ ] Security aspect with **security testing** also needs to be considered.
