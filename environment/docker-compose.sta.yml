@@ -87,8 +87,9 @@ services:
     networks:
       - hh-network
 
-  gatewayv1:
+  gateway:
     container_name: gateway
+    image: gateway:${APP_VERSION}
     build:
       context: ../api-gateway
     environment:
@@ -100,8 +101,9 @@ services:
     networks:
       - hh-network
 
-  authv1:
+  auth:
     container_name: auth
+    image: auth:${APP_VERSION}
     build:
       context: ../auth-server
     environment:
@@ -113,8 +115,9 @@ services:
     networks:
       - hh-network
 
-  profilev1:
+  profile:
     container_name: prof
+    image: profile:${APP_VERSION}
     build:
       context: ../profile-service
     environment:
@@ -127,8 +130,9 @@ services:
     networks:
       - hh-network
 
-  blogv1:
+  blog:
     container_name: blog
+    image: blog:${APP_VERSION}
     build:
       context: ../blog-service
       dockerfile: ../blog-service/blog-api/Dockerfile
@@ -151,8 +155,9 @@ services:
     networks:
       - hh-network
 
-  connectionv1:
+  connection:
     container_name: conn
+    image: connection:${APP_VERSION}
     build: 
       context: ../connection-service
       dockerfile: Dockerfile
@@ -173,8 +178,9 @@ services:
     networks:
       - hh-network
 
-  notificationv1:
+  notification:
     container_name: noti
+    image: notification:${APP_VERSION}
     build:
       context: ../notification-service
       dockerfile: Dockerfile
