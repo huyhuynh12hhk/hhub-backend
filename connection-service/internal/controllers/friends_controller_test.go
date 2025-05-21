@@ -17,16 +17,8 @@ import (
 var friendCtr FriendController = *NewFriendController(services_friend.NewMockFollowService())
 
 var cfrRequest = dtos.AddFriendRequest{
-	Sender: dtos.UserVO{
-		Id:       "uuid01",
-		Name:     "User One",
-		ImageUrl: "",
-	},
-	Receiver: dtos.UserVO{
-		Id:       "uuid02",
-		Name:     "User Two",
-		ImageUrl: "",
-	},
+	SenderId:   "uuid01",
+	ReceiverId: "uuid02",
 }
 
 func TestAddFriendShouldSuccess(t *testing.T) {
@@ -53,8 +45,8 @@ func TestAcceptFriendRequestShouldSuccess(t *testing.T) {
 	req := httptest.NewRequest(
 		"PATCH",
 		fmt.Sprintf("/%s/accept/%s",
-			cfrRequest.Receiver.Id,
-			cfrRequest.Sender.Id),
+			cfrRequest.ReceiverId,
+			cfrRequest.SenderId),
 		nil)
 
 	res := httptest.NewRecorder()
@@ -72,8 +64,8 @@ func TestDeclineFriendRequestShouldSuccess(t *testing.T) {
 	req := httptest.NewRequest(
 		"PATCH",
 		fmt.Sprintf("/%s/decline/%s",
-			cfrRequest.Receiver.Id,
-			cfrRequest.Sender.Id),
+			cfrRequest.ReceiverId,
+			cfrRequest.SenderId),
 		nil)
 
 	res := httptest.NewRecorder()
@@ -91,8 +83,8 @@ func TestRemoveFriendShouldSuccess(t *testing.T) {
 	req := httptest.NewRequest(
 		"DELETE",
 		fmt.Sprintf("/%s/remove/%s",
-			cfrRequest.Receiver.Id,
-			cfrRequest.Sender.Id),
+			cfrRequest.ReceiverId,
+			cfrRequest.SenderId),
 		nil)
 
 	res := httptest.NewRecorder()
@@ -110,7 +102,7 @@ func TestGetFriendListShouldSuccess(t *testing.T) {
 	req := httptest.NewRequest(
 		"GET",
 		fmt.Sprintf("/%s",
-			cfrRequest.Sender.Id),
+			cfrRequest.SenderId),
 		nil)
 
 	res := httptest.NewRecorder()
@@ -128,7 +120,7 @@ func TestGetFriendRequestListShouldSuccess(t *testing.T) {
 	req := httptest.NewRequest(
 		"GET",
 		fmt.Sprintf("/%s",
-			cfrRequest.Sender.Id),
+			cfrRequest.SenderId),
 		nil)
 
 	res := httptest.NewRecorder()

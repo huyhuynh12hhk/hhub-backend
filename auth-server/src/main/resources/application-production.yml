@@ -1,0 +1,72 @@
+server:
+  port: 9000
+
+#logging:
+#  level:
+#    root: INFO
+#    org.springframework.web: INFO
+#    org.springframework.security: TRACE
+#    org.springframework.security.oauth2: TRACE
+
+spring:
+  application:
+    name: auth-server
+  datasource:
+    url: ${AUTH_DB_URL}
+    driverClassName: "com.mysql.cj.jdbc.Driver"
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
+  jpa:
+    database: mysql
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+  jackson:
+    serialization:
+      indent-output: true
+  data:
+    redis:
+      host: {REDIS_HOST}
+      port: 6379
+      password: ${REDIS_PASSWORD}
+      lettuce:
+        pool:
+          max-active: 10 # Maximum number of active connections in the pool
+          max-idle: 5 # Maximum number of idle connections in the pool
+          min-idle: 5 # Minimum number of idle connections in the pool
+      connect-timeout: 30000 # Connection timeout (in milliseconds)
+  security:
+    oauth2:
+      authorizationserver:
+        issuer: ${AUTH_CLIENT_ISSUER}
+      resourceserver:
+        jwt:
+          issuer-uri: ${AUTH_CLIENT_URL}
+          jwt-set-uri: ${AUTH_CLIENT_URL}/oauth2/jwks
+#      client:
+#        registration:
+#          google:
+#            clientId: ${GOOGLE_CLIENT_ID}
+#            clientSecret: ${GOOGLE_CLIENT_SECRET}
+#            scope:
+#              - email
+#              - profile
+#              - openid
+
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout:    10000
+      profile-service:
+        loggerLevel: full
+
+app:
+  services:
+    profile: ${PROFILE_SERVICE_URL}

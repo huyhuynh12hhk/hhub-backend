@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"hhub/connection-service/internal/pkg/response"
 	utils_auth "hhub/connection-service/internal/pkg/utils/auth"
-	"hhub/connection-service/third_party/oidc/keycloak"
+	auth "hhub/connection-service/third_party/oidc/app"
 
 	"github.com/gin-gonic/gin"
 )
@@ -25,8 +25,8 @@ func Authentication() gin.HandlerFunc {
 			return
 		}
 		// fmt.Printf("Token extracted: %s", jwt)
-		
-		token, err := keycloak.KeycloakVerifier().Verify(c, jwt)
+
+		token, err := auth.AppTokenVerifier().Verify(c, jwt)
 		if err != nil {
 			fmt.Printf("Token verified error: %+v\n", err)
 			response.ErrorResponse(c, response.Unauthorized)

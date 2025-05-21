@@ -19,18 +19,20 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: http://idp-keycloak:8080/realms/${AUTH_REALM}/protocol/openid-connect/certs
+          issuer-uri: ${AUTH_CLIENT_URL}
+          jwk-set-uri: ${AUTH_CLIENT_URL}/oauth2/jwks
       client:
         provider:
-          keycloak:
-            issuer-uri: http://idp-keycloak:8080/realms/${AUTH_REALM}
+          spring:
+            issuer-uri: ${AUTH_CLIENT_ISSUER}
         registration:
-          internal-service:
-            provider: keycloak
-            client-id: ${AUTH_SERVICE_CLIENT}
-            client-secret: ${AUTH_SERVICE_CLIENT_SECRET}
+          spring-auth:
+            provider: spring
+            client-id: ${AUTH_CLIENT_ID}
+            client-secret: ${AUTH_CLIENT_SECRET}
             authorization-grant-type: authorization_code
             scope: openid
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
   cloud:
     circuitbreaker:
       resilience4j:

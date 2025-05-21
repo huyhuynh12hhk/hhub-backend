@@ -1,12 +1,45 @@
-version: '3.8'
-
 services:
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.0.0
+    container_name: es
+    environment:
+      - node.name=es01
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+#    volumes:
+#      - ./environment/dev/elk/e:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - hh-network
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.0.0
+    container_name: kibana
+    environment:
+#      - ELASTICSEARCH_HOSTS=http://es:9200
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+    ports:
+      - 5601:5601
+    depends_on:
+      - elasticsearch
+    networks:
+      - hh-network
 
   kafka-ui:
     container_name: kafka-ui
     image: provectuslabs/kafka-ui:latest
     ports:
-      - '5600:8080'
+      - '5800:8080'
     depends_on:
       - kafka
     environment:
@@ -19,7 +52,7 @@ services:
   kafka:
     image: 'bitnami/kafka:3.7.0'
     container_name: kafka
-    hostname: kafka
+#    hostname: kafka
     ports:
       - '9094:9094'
       - '9092:9092'
@@ -54,110 +87,9 @@ services:
     networks:
       - hh-network
 
-  redis:
-    container_name: redis
-    image: redis:latest
-    command:
-      - /bin/sh
-      - -c
-      - redis-server --requirepass ${REDIS_PASSWORD:-""}
-    ports:
-      - "6339:6379"
-    networks:
-      - hh-network
-
-  mongodb:
-    image: mongo:latest
-    container_name: mongodb
-    ports:
-      - '27017:27017'
-    environment:
-      - MONGO_INITDB_DATABASE=test
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=123456
-    networks:
-      - hh-network
-
-  pgadmin:
-    image: dpage/pgadmin4
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@system.vn
-      - PGADMIN_DEFAULT_PASSWORD=admin123
-    restart: always
-    ports:
-      - '6052:80'
-    networks:
-      - hh-network
-
-  postgres-db:
-    image: postgres:latest
-    container_name: postgresdb
-    ports:
-      - '5432:5432'
-    restart: always
-    env_file:
-      - .env
-    networks:
-      - hh-network
-
-  idp-keycloak:
-    container_name: idp-keycloak
-    image: quay.io/keycloak/keycloak:26.1.4
-    command: [ "start-dev", "--import-realm" ]
-    environment:
-      DB_VENDOR: MYSQL
-      DB_ADDR: mysqldb
-      DB_PORT: 3306
-      DB_DATABASE: keycloak
-      DB_USER: root
-      DB_PASSWORD: '@123456'
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
-    ports:
-      - "8181:8080"
-    volumes:
-      - ./dev/keycloak/realms/:/opt/keycloak/data/import/
-    depends_on:
-      - mysql-db
-    networks:
-      - hh-network
-
-  mysql-db:
-    image: mysql:8.0
-    container_name: mysqldb
-    cap_add:
-      - SYS_NICE
-    restart: always
-    environment:
-      - MYSQL_DATABASE=identity
-      - MYSQL_ROOT_PASSWORD=@123456
-    volumes:
-      - ./dev/data/mysql:/var/lib/mysql
-      - ./dev/script/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
-    ports:
-      - '3306:3306'
-    networks:
-      - hh-network
-
-  mysql-workbench:
-    image: lscr.io/linuxserver/mysql-workbench:latest
-    cap_add:
-      - IPC_LOCK
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Etc/UTC
-      - CUSTOM_USER=root
-      - PASSWORD=@123456
-    ports:
-      - 2300:3000
-      - 2301:3001
-    restart: unless-stopped
-    networks:
-      - hh-network
-
-  gatewayv1:
+  gateway:
     container_name: gateway
+    image: gateway:${APP_VERSION}
     build:
       context: ../api-gateway
     environment:
@@ -169,35 +101,53 @@ services:
     networks:
       - hh-network
 
-  profilev1:
-    container_name: profile-service
+  auth:
+    container_name: auth
+    image: auth:${APP_VERSION}
+    build:
+      context: ../auth-server
+    environment:
+      - SPRING_PROFILES_ACTIVE=${ENVIRONMENT:-staging}
+    env_file:
+      - .env
+    ports:
+      - "9000:9000"
+    networks:
+      - hh-network
+
+  profile:
+    container_name: prof
+    image: profile:${APP_VERSION}
     build:
       context: ../profile-service
     environment:
       - ENVIRONMENT=${ENVIRONMENT:-staging}
       - DATABASE_URL=${PROFILE_DB_URL}
-      - KEYCLOAK_URL=${AUTH_URL}
-      - KEYCLOAK_REALM=${AUTH_REALM}
-      - KEYCLOAK_CLIENT=${AUTH_SERVICE_CLIENT}
-      - KEYCLOAK_CLIENT_SECRET=${AUTH_SERVICE_CLIENT_SECRET}
     env_file:
       - .env
     ports:
       - "8000:8000"
-    depends_on:
-      - postgres-db
     networks:
       - hh-network
 
-  blogv1:
-    container_name: blog-service
+  blog:
+    container_name: blog
+    image: blog:${APP_VERSION}
     build:
       context: ../blog-service
       dockerfile: ../blog-service/blog-api/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT:-staging}
       - ASPNETCORE_URLS=http://+:5050
-      - DB_CONNECT=${BLOG_DB_URL}
+#      - DB_CONNECT=${BLOG_DB_URL}
+      - MongoDB:ConnectionString=${BLOG_DB_URL}
+      - Kafka:BootstrapServers=${KAFKA_SERVICE_URL}
+      - Redis:ConnectionString=${REDIS_SERVICE_URL}
+      - Jwt:Authority=${AUTH_SERVER_ISSUER}
+      - Jwt:TokenUrl=${AUTH_SERVER_URL}/oauth2/token
+      - Elastic:BaseUrl=${ELASTIC_URL}
+      - Services:Auth=${AUTH_SERVER_URL}
+      - Services:Conn=${CONNECTION_SERVICE_URL}
     env_file:
       - .env
     ports:
@@ -205,24 +155,32 @@ services:
     networks:
       - hh-network
 
-  connectionv1:
-    container_name: connection-service
+  connection:
+    container_name: conn
+    image: connection:${APP_VERSION}
     build: 
       context: ../connection-service
       dockerfile: Dockerfile
     environment:
       ENV: ${ENVIRONMENT:-staging}
+      MYSQL_HOST: ${CONN_DB_HOST}
+      MYSQL_PORT: ${CONN_DB_PORT}
+      MYSQL_DATABASE: ${CONN_DB_NAME}
+      AUTH_URL: ${AUTH_SERVER_URL}
+      AUTH_CLIENT: ${AUTH_CLIENT_ID}
+      AUTH_SECRET: ${AUTH_CLIENT_SECRET}
+      REDIS_ADDRESS: ${REDIS_SERVICE_URL}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     env_file:
       - .env
     ports:
       - "8224:8224"
-    depends_on:
-      - mysql-db
     networks:
       - hh-network
 
-  notificationv1:
-    container_name: notification-service
+  notification:
+    container_name: noti
+    image: notification:${APP_VERSION}
     build:
       context: ../notification-service
       dockerfile: Dockerfile
@@ -230,8 +188,8 @@ services:
       NODE_ENV: ${ENVIRONMENT:-staging}
     env_file:
       - .env
-    depends_on:
-      - kafka
+    ports:
+      - "8060:8060"
     networks:
       - hh-network
 
@@ -239,3 +197,4 @@ services:
 networks:
   hh-network:
     driver: bridge
+

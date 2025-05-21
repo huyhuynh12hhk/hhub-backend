@@ -1,5 +1,5 @@
 ﻿using blog_api.DTOs.Request;
-using blog_api.Entities;
+using blog_api.Models.Entities;
 
 namespace blog_api.Services
 {
@@ -9,7 +9,7 @@ namespace blog_api.Services
         Task<Post> UpdatePost(string id, UpdatePostRequest request);
         Task ToggleReaction(string id, MakeReactionRequest request);
         Task DeletePost(string id);
-        Task<Post> GetPostById(string id);
+        Task<Post?> GetPostById(string id);
         Task<List<Post>> GetPosts();
     }
 }

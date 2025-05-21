@@ -5,28 +5,19 @@ import (
 	"hhub/connection-service/internal/models"
 	"hhub/connection-service/internal/pkg/response"
 	repositories_follow "hhub/connection-service/internal/repositories/follow"
+	cache "hhub/connection-service/third_party/cache/redis"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-// func setupMock() repositories_follow.IFollowRepository {
 
-// }
 
-var service IFollowService = NewFollowService(repositories_follow.NewMockFollowRepository())
+var service IFollowService = NewFollowService(repositories_follow.NewMockFollowRepository(), cache.NewRedisMock())
 
 var cRequest = dtos.FollowRequest{
-	Subscriber: dtos.UserVO{
-		Id:       "uuid01",
-		Name:     "User One",
-		ImageUrl: "",
-	},
-	Producer: dtos.UserVO{
-		Id:       "uuid02",
-		Name:     "User Two",
-		ImageUrl: "",
-	},
+	SubscriberId: "uuid01",
+	ProducerId:   "uuid02",
 }
 
 var uRequest = dtos.UpdateFollowStatusRequest{
@@ -38,21 +29,26 @@ var uRequest = dtos.UpdateFollowStatusRequest{
 	},
 }
 
+func setup(t *testing.T) {
+
+	
+}
+
 func TestCreateFollowShouldSuccess(t *testing.T) {
 	rs, code, _ := service.CreateFollow(&cRequest)
 
 	assert.Equal(t, response.CreatedSuccess, code)
-	assert.Equal(t, cRequest.Subscriber.Id, rs.Subscriber.Id)
+	assert.Equal(t, cRequest.SubscriberId, rs.SubscriberId)
 }
 
 func TestRemoveFollowShouldSuccess(t *testing.T) {
-	code, _ := service.RemoveFollow(cRequest.Subscriber.Id, cRequest.Producer.Id)
+	code, _ := service.RemoveFollow(cRequest.SubscriberId, cRequest.ProducerId)
 
 	assert.Equal(t, response.Accepted, code)
 }
 
 func TestUpdateFollowStatusShouldSuccess(t *testing.T) {
-	code, _ := service.UpdateFollowStatus(cRequest.Subscriber.Id, &uRequest)
+	code, _ := service.UpdateFollowStatus(cRequest.SubscriberId, &uRequest)
 
 	assert.Equal(t, response.Accepted, code)
 }

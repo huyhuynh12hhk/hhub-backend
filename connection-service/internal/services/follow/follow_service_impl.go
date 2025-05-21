@@ -2,19 +2,23 @@ package services_follow
 
 import (
 	"fmt"
+	prefix "hhub/connection-service/global/cache"
 	"hhub/connection-service/internal/dtos"
 	"hhub/connection-service/internal/mappers"
 	"hhub/connection-service/internal/models"
 	"hhub/connection-service/internal/pkg/response"
 	repositories "hhub/connection-service/internal/repositories/follow"
+	cache "hhub/connection-service/third_party/cache/redis"
+	"time"
 )
 
 type _FollowService struct {
 	followRepository repositories.IFollowRepository
+	redisCache       cache.RedisClient
 }
 
 // CreateFollow implements IFollowService.
-func (s *_FollowService) CreateFollow(request *dtos.FollowRequest) (data *dtos.FollowResponse, code int, err error) {
+func (s *_FollowService) CreateFollow(request *dtos.FollowRequest) (*dtos.FollowResponse, int, error) {
 	var record = mappers.FollowRequestRequestToModel(request)
 	result := s.followRepository.CreateFollow(&record)
 
@@ -26,7 +30,7 @@ func (s *_FollowService) CreateFollow(request *dtos.FollowRequest) (data *dtos.F
 }
 
 // RemoveFollow implements IFollowService.
-func (s *_FollowService) RemoveFollow(subscriberId string, producerId string) (code int, err error) {
+func (s *_FollowService) RemoveFollow(subscriberId string, producerId string) (int, error) {
 	// Find the request
 	record := s.followRepository.GetFollowsBySubscriberIdAndProducerId(subscriberId, producerId)
 
@@ -45,7 +49,7 @@ func (s *_FollowService) RemoveFollow(subscriberId string, producerId string) (c
 }
 
 // UpdateFollowStatus implements IFollowService.
-func (s *_FollowService) UpdateFollowStatus(subscriberId string, request *dtos.UpdateFollowStatusRequest) (code int, err error) {
+func (s *_FollowService) UpdateFollowStatus(subscriberId string, request *dtos.UpdateFollowStatusRequest) (int, error) {
 	// Find the request
 	record := s.followRepository.GetFollowsBySubscriberIdAndProducerId(subscriberId, request.Producer.Id)
 
@@ -66,39 +70,63 @@ func (s *_FollowService) UpdateFollowStatus(subscriberId string, request *dtos.U
 }
 
 // GetFollowers implements IFollowService.
-func (s *_FollowService) GetFollowers(ownerId string) (data []dtos.FollowResponse, code int, err error) {
+func (s *_FollowService) GetFollowers(ownerId string) ([]dtos.FollowResponse, int, error) {
 	// fmt.Println("Owner info: ", ownerId)
-	results := s.followRepository.GetFollowsByProducerId(ownerId)
+
+	var results []models.Follow
+	callback := func() []models.Follow {
+		return s.followRepository.GetFollowsByProducerId(ownerId)
+	}
+
+	results, err := cache.GetOrSetValues(
+		&s.redisCache,
+		prefix.FollowCachePrefix+ownerId,
+		callback,
+		10*time.Minute,
+	)
+	if err != nil {
+		return nil, response.ServerError, err
+	}
 
 	// fmt.Printf("Service:: Repo Result %+v\n", results)
 
 	items := mappers.FollowsToResponses(results)
-	if items == nil{
-		items = []dtos.FollowResponse{}
-	}
 
 	return items, response.Success, nil
 }
 
 // GetFollowingUsers implements IFollowService.
-func (s *_FollowService) GetFollowingUsers(ownerId string) (data []dtos.FollowResponse, code int, err error) {
+func (s *_FollowService) GetFollowingUsers(ownerId string) ([]dtos.FollowResponse, int, error) {
 	// fmt.Println("Owner info: ", ownerId)
-	results := s.followRepository.GetFollowsBySubscriberId(ownerId)
+	var results []models.Follow
+	callback := func() []models.Follow {
+		return s.followRepository.GetFollowsBySubscriberId(ownerId)
+	}
+
+	results, err := cache.GetOrSetValues(
+		&s.redisCache,
+		prefix.FollowCachePrefix+ownerId,
+		callback,
+		10*time.Minute,
+	)
+	if err != nil {
+		return nil, response.ServerError, err
+	}
 
 	// fmt.Printf("Service:: Repo Result %+v\n", results)
 
 	items := mappers.FollowsToResponses(results)
-	if items == nil{
-		items = []dtos.FollowResponse{}
-	}
 
 	return items, response.Success, nil
 }
 
 func NewFollowService(
 	followRepository repositories.IFollowRepository,
+	cache *cache.RedisClient,
 ) IFollowService {
+
 	return &_FollowService{
 		followRepository: followRepository,
+		redisCache:       *cache,
 	}
 }

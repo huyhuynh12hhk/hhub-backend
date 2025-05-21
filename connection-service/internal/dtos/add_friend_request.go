@@ -2,7 +2,7 @@ package dtos
 
 
 type AddFriendRequest struct {
-	Sender   UserVO `json:"sender"`
-	Receiver UserVO `json:"receiver"`
+	SenderId   string `json:"sender"`
+	ReceiverId string `json:"receiver"`
 }
 

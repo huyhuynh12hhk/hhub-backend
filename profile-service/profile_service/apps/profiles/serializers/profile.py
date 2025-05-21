@@ -10,10 +10,8 @@ class ProfileReadSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ProfileWriteSerializer(serializers.ModelSerializer):
-    email = serializers.CharField(allow_blank=True)
-    full_name = serializers.CharField(allow_blank=True)
-    profile_picture = Base64ImageField(required=False,allow_null=True)
-    profile_cover = Base64ImageField(required=False,allow_null=True)
+    profile_picture = serializers.CharField(required=False, allow_blank=True)
+    profile_cover = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = UserProfile

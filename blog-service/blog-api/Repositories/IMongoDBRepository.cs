@@ -1,15 +1,16 @@
 ﻿using System.Linq.Expressions;
 
-using blog_api.Entities;
-
-using MongoDB.Driver;
+using blog_api.Models.Entities;
+using blog_api.Pagination;
 
 namespace blog_api.Repositories
 {
     public interface IMongoDBRepository<T> where T : BaseEntity
     {
-        Task<List<T>> GetAllAsync();
-        Task<List<T>> GetAllAsync(Expression<Func<T, bool>>? filters);
+        Task<OffSetPaginatedList<T>> GetAllAsync(int page = 1, int pageSize = 10);
+        Task<OffSetPaginatedList<T>> GetAllAsync(Expression<Func<T, bool>>? filters, int page = 1, int pageSize = 10);
+        Task<CursorPaginatedList<T>> GetAllAsync(Expression<Func<T, bool>> filters, string cursor, int limit = 10);
+        Task<int> CountAsync(Expression<Func<T, bool>> filters);
         Task<T> GetAsync(string id);
         Task<T> GetAsync(Expression<Func<T, bool>> filter);
         Task CreateAsync(T entity);

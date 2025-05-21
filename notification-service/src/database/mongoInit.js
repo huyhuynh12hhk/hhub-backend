@@ -1,7 +1,7 @@
 'use strict'
 
 const mongoose = require('mongoose')
-const {database:{host, name, port, user, password, appName}, debug} = require('../configs/app.settings')
+const {database:{host, name, port, user, password, appName}, debug} = require('../configs/appSettings')
 
 
 const connectionString = `mongodb+srv://${user}:${password}@${host}/${name}?retryWrites=true&w=majority${appName}`
@@ -11,6 +11,8 @@ const connectionString = `mongodb+srv://${user}:${password}@${host}/${name}?retr
 class Database {
 
     constructor() {
+		console.log("Connection String: ",connectionString);
+
         this.connect()
     }
 

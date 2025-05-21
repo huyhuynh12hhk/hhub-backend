@@ -1,0 +1,113 @@
+services:
+
+  gateway:
+    container_name: gateway
+    image: ${REGISTRY_NAME}/${GATEWAY_IMAGE}:${APP_VERSION}
+    build:
+      context: ../api-gateway
+    environment:
+      - SPRING_PROFILES_ACTIVE=${ENVIRONMENT:-staging}
+    env_file:
+      - .env
+    ports:
+      - "8888:8888"
+    networks:
+      - hh-network
+
+  auth:
+    container_name: auth
+    image: ${REGISTRY_NAME}/${AUTH_IMAGE}:${APP_VERSION}
+    build:
+      context: ../auth-server
+    environment:
+      - SPRING_PROFILES_ACTIVE=${ENVIRONMENT:-staging}
+    env_file:
+      - .env
+    ports:
+      - "9000:9000"
+    networks:
+      - hh-network
+
+  profile:
+    container_name: prof
+    image: ${REGISTRY_NAME}/${PROFILE_IMAGE}:${APP_VERSION}
+    build:
+      context: ../profile-service
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-staging}
+      - DATABASE_URL=${PROFILE_DB_URL}
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    networks:
+      - hh-network
+
+  blog:
+    container_name: blog
+    image: ${REGISTRY_NAME}/${BLOG_IMAGE}:${APP_VERSION}
+    build:
+      context: ../blog-service
+      dockerfile: ../blog-service/blog-api/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT:-staging}
+      - ASPNETCORE_URLS=http://+:5050
+#      - DB_CONNECT=${BLOG_DB_URL}
+      - MongoDB:ConnectionString=${BLOG_DB_URL}
+      - Kafka:BootstrapServers=${KAFKA_SERVICE_URL}
+      - Redis:ConnectionString=${REDIS_SERVICE_URL}
+      - Jwt:Authority=${AUTH_SERVER_ISSUER}
+      - Jwt:TokenUrl=${AUTH_SERVER_URL}/oauth2/token
+      - Elastic:BaseUrl=${ELASTIC_URL}
+      - Services:Auth=${AUTH_SERVER_URL}
+      - Services:Conn=${CONNECTION_SERVICE_URL}
+    env_file:
+      - .env
+    ports:
+      - "5050:5050"
+    networks:
+      - hh-network
+
+  connection:
+    container_name: conn
+    image: ${REGISTRY_NAME}/${CONNECTION_IMAGE}:${APP_VERSION}
+    build: 
+      context: ../connection-service
+      dockerfile: Dockerfile
+    environment:
+      ENV: ${ENVIRONMENT:-staging}
+      MYSQL_HOST: ${CONN_DB_HOST}
+      MYSQL_PORT: ${CONN_DB_PORT}
+      MYSQL_DATABASE: ${CONN_DB_NAME}
+      AUTH_URL: ${AUTH_SERVER_URL}
+      AUTH_CLIENT: ${AUTH_CLIENT_ID}
+      AUTH_SECRET: ${AUTH_CLIENT_SECRET}
+      REDIS_ADDRESS: ${REDIS_SERVICE_URL}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    env_file:
+      - .env
+    ports:
+      - "8224:8224"
+    networks:
+      - hh-network
+
+  notification:
+    container_name: noti
+    image: ${REGISTRY_NAME}/${NOTIFICATION_IMAGE}:${APP_VERSION}
+    build:
+      context: ../notification-service
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: ${ENVIRONMENT:-staging}
+    env_file:
+      - .env
+    ports:
+      - "8060:8060"
+    networks:
+      - hh-network
+
+
+networks:
+  hh-network:
+    driver: bridge
+

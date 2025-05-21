@@ -1,5 +1,5 @@
 "use strict";
-require("dotenv").config({ path: `.env.${process.env.NODE_ENV}` });
+require("dotenv").config({ path: process.env.NODE_ENV ? `.env.${process.env.NODE_ENV}` : ".env" });
 const { runConsumer, ensureTopicExists } = require("./messaging/kafka/consumer");
 
 const express = require("express");

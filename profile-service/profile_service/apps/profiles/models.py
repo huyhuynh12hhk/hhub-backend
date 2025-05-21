@@ -11,9 +11,9 @@ class UserProfile(models.Model):
     username = models.CharField(max_length=100, unique=True)
     email = models.EmailField(blank=True)
     full_name = models.CharField(max_length=100, blank=True)
-    profile_picture = models.ImageField(upload_to='user/profile_picture/%Y/%m/%d/', blank=True)
-    profile_cover = models.ImageField(upload_to='user/cover_picture/%Y/%m/%d/', blank=True)
-    bio = models.CharField(max_length=150, blank=True)
+    profile_picture = models.CharField(max_length=1024, blank=True)
+    profile_cover = models.CharField(max_length=1024, blank=True)
+    bio = models.CharField(max_length=300, blank=True)
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(default=timezone.now)
 

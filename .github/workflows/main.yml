@@ -1,81 +1,57 @@
-name: Continuous Integration
+# name: Continuous Integration
 
-on:
-  push:
-    branches:
-      - main
+# on:
+#   push:
+#     branches:
+#       - main
 
-concurrency:
-  group: main
-  cancel-in-progress: true
+# concurrency:
+#   group: main
+#   cancel-in-progress: true
 
-jobs:
+# jobs:
 
-  gateway-assurance:
-    name: API Gateway Assurance
-    uses: ./.github/workflows/api-gateway.yml
+#   gateway-assurance:
+#     name: API Gateway Assurance
+#     uses: ./.github/workflows/api-gateway.yml
 
-  profile-assurance:
-    name: Profile Service Assurance
-    uses: ./.github/workflows/profile-service.yml
+#   profile-assurance:
+#     name: Profile Service Assurance
+#     uses: ./.github/workflows/profile-service.yml
 
-  blog-assurance:
-    name: Blog Service Assurance
-    uses: ./.github/workflows/blog-service.yml
+#   blog-assurance:
+#     name: Blog Service Assurance
+#     uses: ./.github/workflows/blog-service.yml
 
-  connection-assurance:
-    name: Connection Service Assurance
-    uses: ./.github/workflows/connection-service.yml
+#   connection-assurance:
+#     name: Connection Service Assurance
+#     uses: ./.github/workflows/connection-service.yml
 
-  deploy:
-    name: Deploy
-    needs:
-      - gateway-assurance
-      - profile-assurance
-      - blog-assurance
-      - connection-assurance
-    runs-on: ubuntu-latest
-    steps:
-      - name: Configure SSH
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USER: ${{ secrets.SSH_USER }}
-        run: |
-          mkdir -p ~/.ssh/
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/github
-          chmod 600 ~/.ssh/github
-          cat >>~/.ssh/config <<END
-          Host target
-            HostName $SSH_HOST
-            User $SSH_USER
-            IdentityFile ~/.ssh/github
-            LogLevel ERROR
-            StrictHostKeyChecking no
-          END
+#   deploy:
+#     name: Deploy
+#     needs:
+#       - gateway-assurance
+#       - profile-assurance
+#       - blog-assurance
+#       - connection-assurance
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Configure SSH
+#         env:
+#           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+#           SSH_HOST: ${{ secrets.SSH_HOST }}
+#           SSH_USER: ${{ secrets.SSH_USER }}
+#         run: |
+#           mkdir -p ~/.ssh/
+#           echo "$SSH_PRIVATE_KEY" > ~/.ssh/github
+#           chmod 600 ~/.ssh/github
+#           cat >>~/.ssh/config <<END
+#           Host target
+#             HostName $SSH_HOST
+#             User $SSH_USER
+#             IdentityFile ~/.ssh/github
+#             LogLevel ERROR
+#             StrictHostKeyChecking no
+#           END
 
-      # Separate to multiple layer for docker builder to avoid 4GB RAM server crash
-      # TODO: Optimize runtime memory?
-      - name: Down
-        run: |
-          ssh target "cd backend && docker compose -f ./environment/docker-compose.sta.yml down && git pull"
-
-      - name: Up Infrastructure
-        run: |
-          ssh target "cd backend && docker compose -f ./environment/docker-compose.sta.yml up -d postgres-db mysql-db kafka idp-keycloak "
-
-      - name: Build Profile And Blog Services
-        run: |
-          ssh target "cd backend && docker compose -f ./environment/docker-compose.sta.yml build profilev1 blogv1" 
-
-      - name: Build Connection and Notification Services
-        run: |
-          ssh target "cd backend && docker compose -f ./environment/docker-compose.sta.yml build connectionv1 notificationv1"
-
-      - name: Build Gateway
-        run: |
-          ssh target "cd backend && docker compose -f ./environment/docker-compose.sta.yml build gatewayv1"
-
-      - name: Run deploy
-        run: |
-          ssh target "cd backend && docker compose -f ./environment/docker-compose.sta.yml up -d"
+      
