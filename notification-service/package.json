@@ -16,5 +16,6 @@
     "kafkajs": "^2.2.4",
     "mongoose": "^8.13.2",
     "notification-service": "file:"
+
   }
 }

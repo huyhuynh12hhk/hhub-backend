@@ -1,7 +1,9 @@
-const { Notification: notification } = require("../models/NotifyMessageSchema");
+"use strict";
+
+const model = require("../models/notifyMessageSchema");
 
 const createMessage = async ({ type, content, senderId, receiverId, options }) => {
-	const newNoti = await notification.create({
+	const newNoti = await model.NotificationModel.create({
 		noti_type: type,
 		noti_content: content,
 		noti_senderId: senderId,
@@ -23,7 +25,7 @@ const getMessages = async ({ userId, cursor = null, limit = 10 }) => {
 		];
 	}
 
-	const docs = await NotificationModel.find(filter)
+	const docs = await model.NotificationModel.find(filter)
 		.sort({ createdAt: -1, _id: -1 })
 		.limit(limit + 1)
 		.exec();
@@ -41,7 +43,7 @@ const getMessages = async ({ userId, cursor = null, limit = 10 }) => {
 	return { items, nextCursor };
 };
 
-module.exports ={
+module.exports = {
 	createMessage,
-	getMessages
-}
+	getMessages,
+};

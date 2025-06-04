@@ -1,8 +1,6 @@
 "use strict";
 
-const { Notification: notification } = require("../database/models/NotifyMessageSchema");
-const { createMessage, getMessages } = require("../database/repositories/NotifyMessageRepository");
-
+const { createMessage, getMessages } = require("../database/repositories/notifyMessageRepository");
 
 const saveMessage = async ({ type = "Default", receiverId, senderId, content, options = {} }) => {
 	// if (type === "Default") {
@@ -24,23 +22,19 @@ const saveMessage = async ({ type = "Default", receiverId, senderId, content, op
 };
 
 const getNotification = async ({ userId, cursor = null }) => {
-
-
-
 	console.log(
 		`${Date.now().toString("yyyy/MM/dd")}:: Saving message: ${type} - ${receiverId} - ${senderId} - ${content}`
 	);
 
 	const messages = await getMessages({
 		userId,
-		cursor
+		cursor,
 	});
 
 	return newNoti;
 };
 
-
 module.exports = {
 	saveMessage,
-	getNotification
+	getNotification,
 };

@@ -11,7 +11,7 @@ const connectionString = `mongodb+srv://${user}:${password}@${host}/${name}?retr
 class Database {
 
     constructor() {
-		console.log("Connection String: ",connectionString);
+		// console.log("Connection String: ",connectionString);
 
         this.connect()
     }
