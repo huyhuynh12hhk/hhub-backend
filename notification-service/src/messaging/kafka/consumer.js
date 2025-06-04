@@ -1,8 +1,9 @@
+"use strict";
 const { Kafka, logLevel } = require("kafkajs");
 const {
 	kafka: { brokers, clientId, groupId, topic },
 } = require("../../configs/appSettings");
-const { saveMessage } = require("../../services/NotificationService");
+const { saveMessage } = require("../../services/notificationService");
 //console.log("KK Port: ", brokers);
 const kafka = new Kafka({
 	logLevel: logLevel.INFO,
@@ -61,5 +62,5 @@ const runConsumer = async () => {
 
 module.exports = {
 	runConsumer,
-	ensureTopicExists
+	ensureTopicExists,
 };

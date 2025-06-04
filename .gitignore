@@ -4,3 +4,10 @@
 environment/.env**
 environment/dev
 .private
+/environment/k8s/raw/test
+/environment/k8s/raw/store
+/environment/k8s/raw/router
+/environment/k8s/raw/env
+/environment/k8s/local
+/environment/k8s/common/env
+/environment/k8s/common/router
