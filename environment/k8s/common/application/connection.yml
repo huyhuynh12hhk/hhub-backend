@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: connection-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: connection-service
+  template:
+    metadata:
+      labels:
+        app: connection-service
+    spec:
+      containers:
+      - name: connection-service
+        image: ${REGISTRY_NAME}/${CONNECTION_IMAGE}:${APP_VERSION}
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "300m"
+        envFrom:
+        - secretRef:
+            name: env-secret
+        - configMapRef:
+            name: conn-env
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: connection
+spec:
+  selector:
+    app: connection-service
+  ports:
+  - port: 8224
+    targetPort: 8224

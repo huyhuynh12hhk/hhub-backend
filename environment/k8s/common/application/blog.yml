@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blog-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: blog-service
+  template:
+    metadata:
+      labels:
+        app: blog-service
+    spec:
+      containers:
+      - name: blog-service
+        image: ${REGISTRY_NAME}/${BLOG_IMAGE}:${APP_VERSION}
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        envFrom:
+        - secretRef:
+            name: env-secret
+        - configMapRef:
+            name: blog-env
+        env:
+        - name: MongoDB__ConnectionString
+          valueFrom:
+            secretKeyRef:
+              key: BLOG_DB_URL
+              name: env-secret
+        - name: Redis__ConnectionString
+          valueFrom:
+            secretKeyRef:
+              key: REDIS_SERVICE_URL
+              name: env-secret
+        - name: Jwt__Authority
+          valueFrom:
+            secretKeyRef:
+              key: AUTH_SERVER_ISSUER
+              name: env-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: blog
+spec:
+  selector:
+    app: blog-service
+  ports:
+  - port: 5050
+    targetPort: 5050

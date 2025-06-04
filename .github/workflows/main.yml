@@ -1,57 +1,136 @@
-# name: Continuous Integration
+name: Continuous Integration
 
-# on:
-#   push:
-#     branches:
-#       - main
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "docs/**"
+      - "README.md"
 
-# concurrency:
-#   group: main
-#   cancel-in-progress: true
+concurrency:
+  group: main
+  cancel-in-progress: true
 
-# jobs:
+jobs:
 
-#   gateway-assurance:
-#     name: API Gateway Assurance
-#     uses: ./.github/workflows/api-gateway.yml
+  # gateway-assurance:
+  #   name: API Gateway Assurance
+  #   uses: ./.github/workflows/api-gateway.yml
 
-#   profile-assurance:
-#     name: Profile Service Assurance
-#     uses: ./.github/workflows/profile-service.yml
+  # profile-assurance:
+  #   name: Profile Service Assurance
+  #   uses: ./.github/workflows/profile-service.yml
 
-#   blog-assurance:
-#     name: Blog Service Assurance
-#     uses: ./.github/workflows/blog-service.yml
+  blog-assurance:
+    name: Blog Service Assurance
+    uses: ./.github/workflows/blog-service.yml
 
-#   connection-assurance:
-#     name: Connection Service Assurance
-#     uses: ./.github/workflows/connection-service.yml
+  connection-assurance:
+    name: Connection Service Assurance
+    uses: ./.github/workflows/connection-service.yml
 
-#   deploy:
-#     name: Deploy
-#     needs:
-#       - gateway-assurance
-#       - profile-assurance
-#       - blog-assurance
-#       - connection-assurance
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Configure SSH
-#         env:
-#           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-#           SSH_HOST: ${{ secrets.SSH_HOST }}
-#           SSH_USER: ${{ secrets.SSH_USER }}
-#         run: |
-#           mkdir -p ~/.ssh/
-#           echo "$SSH_PRIVATE_KEY" > ~/.ssh/github
-#           chmod 600 ~/.ssh/github
-#           cat >>~/.ssh/config <<END
-#           Host target
-#             HostName $SSH_HOST
-#             User $SSH_USER
-#             IdentityFile ~/.ssh/github
-#             LogLevel ERROR
-#             StrictHostKeyChecking no
-#           END
+  deploy:
+    name: Build And Deploy
+    environment: staging
+    needs:
+    #   - gateway-assurance
+    #   - profile-assurance
+      - blog-assurance
+      - connection-assurance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-      
+      - name: ENV setup
+        run: |
+          cd ./environment
+
+          echo "ENVIRONMENT=${{ vars.ENVIRONMENT }}" >> .env
+          echo "REGISTRY_NAME=${{ secrets.REGISTRY_NAME }}" >> .env
+          echo "APP_VERSION=${{ vars.APP_VERSION}}" >> .env
+
+          echo "GATEWAY_IMAGE=${{ secrets.GATEWAY_IMAGE}}" >> .env
+          echo "AUTH_IMAGE=${{ secrets.AUTH_IMAGE}}" >> .env
+          echo "PROFILE_IMAGE=${{ secrets.PROFILE_IMAGE}}" >> .env
+          echo "BLOG_IMAGE=${{ secrets.BLOG_IMAGE}}" >> .env
+          echo "CONNECTION_IMAGE=${{ secrets.CONNECTION_IMAGE}}" >> .env
+          echo "NOTIFICATION_IMAGE=${{ secrets.NOTIFICATION_IMAGE}}" >> .env
+
+          cd ../profile-service
+
+          echo "${{ secrets.PROFILE_SERVICE_ENV_CONTENT }}" > .env.staging
+          echo "${{ secrets.PROFILE_SERVICE_ENV_CONTENT }}" > .env.production
+          echo "${{ secrets.PROFILE_SERVICE_ENV_CONTENT }}" > .env.development
+
+          cd ../notification-service
+
+          echo "${{ secrets.NOTIFICATION_SERVICE_ENV_CONTENT }}" > .env.staging
+
+      - name: Set up Docker Compose
+        uses: docker/setup-compose-action@v1
+
+      - name: Login to Docker Registry
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.REGISTRY_NAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN  }}
+
+      - name: Build and Push Docker Images
+        run: |
+          set -a
+          source ./environment/.env
+          set +a
+          
+          docker compose -f ./environment/docker-compose.hub.yml build
+          docker compose -f ./environment/docker-compose.hub.yml push
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Update Kubeconfig for EKS
+        run: |
+          aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
+
+      - name: Convert Kubernetes Manifests with envsubst
+        run: |
+          # Export variables needed for envsubst
+          export REGISTRY_NAME="${{ secrets.REGISTRY_NAME }}"
+          export APP_VERSION="${{ vars.APP_VERSION }}"
+          
+          export GATEWAY_IMAGE="${{ secrets.GATEWAY_IMAGE }}"
+          export AUTH_IMAGE="${{ secrets.AUTH_IMAGE }}"
+          export PROFILE_IMAGE="${{ secrets.PROFILE_IMAGE }}"
+          export BLOG_IMAGE="${{ secrets.BLOG_IMAGE }}"
+          export CONNECTION_IMAGE="${{ secrets.CONNECTION_IMAGE }}"
+          export NOTIFICATION_IMAGE="${{ secrets.NOTIFICATION_IMAGE }}"
+
+          cd ./environment/k8s/common
+
+          mkdir -p app_processed
+
+          cd ./application
+
+          for FILE in *.yml; do
+            echo "Convert application manifest file $FILE"
+            envsubst < "$FILE" > "../app_processed/$FILE"
+          done
+
+      # cd ../app_processed
+
+      # for FILE in *.yml; do
+      #   echo "File $FILE content:"
+      #   cat $FILE
+      # done
+
+
+      - name: Apply Application Change Manifests to EKS
+        run: |
+          kubectl -n ${{ secrets.CLUSTER_NS }} apply -f environment/k8s/common/app_processed
+
+        # kubectl -n ${{ secrets.CLUSTER_NS }} apply -f environment/k8s/common/infrastructure

@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: elasticsearch
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: elasticsearch
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+    spec:
+      containers:
+        - name: elasticsearch
+          image: docker.elastic.co/elasticsearch/elasticsearch:8.0.0
+          ports:
+            - containerPort: 9200
+              name: http
+          volumeMounts:
+            - name: elasticsearch-data
+              mountPath: /usr/share/elasticsearch/data
+          envFrom:
+            - configMapRef:
+                name: es-env
+      volumes:
+        - name: elasticsearch-data
+          # emptyDir: {}
+          persistentVolumeClaim:
+            claimName: elk-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: es
+spec:
+  selector:
+    app: elasticsearch
+  ports:
+    - name: http
+      port: 9200
+      targetPort: 9200

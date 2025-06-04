@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: profile-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: profile-service
+  template:
+    metadata:
+      labels:
+        app: profile-service
+    spec:
+      containers:
+      - name: profile-service
+        image: ${REGISTRY_NAME}/${PROFILE_IMAGE}:${APP_VERSION}
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: "200Mi"
+            cpu: "200m"
+          limits:
+            memory: "500Mi"
+            cpu: "500m"
+        envFrom:
+        - configMapRef:
+            name: profile-env
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: profile
+spec:
+  selector:
+    app: profile-service
+  ports:
+  - port: 8000
+    targetPort: 8000
